@@ -1,5 +1,5 @@
 "use strict";
-const VERSION = "2.0.0";
+const VERSION = "2.1.0";
 const LOGO = '<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#12141B"/><g transform="translate(256 268) skewX(-14)"><rect x="-150" y="20" width="76" height="120" rx="38" fill="#8592FF"/><rect x="-38" y="-60" width="76" height="200" rx="38" fill="#FF7A3D"/><rect x="74" y="-140" width="76" height="280" rx="38" fill="#38D38A"/></g></svg>';
 const TT = q => "https://www.tiktok.com/search?q=" + encodeURIComponent(q);
 const RED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -40,8 +40,9 @@ const SESS = {
   D:{name:"Torso completo",place:"Parque",items:[["flexPies",4,"6-12",90],["dominadasD",4,"máx. −1",120],["pica",3,"6-10",90],["remo",3,"10-12",60],["elevLat",3,"15-20",45]]}
 };
 const WARM = [["2 min de trote suave o jumping jacks bajos","jumping jacks tecnica"],["Círculos de brazos: 10 adelante, 10 atrás",null],["Rotación externa con banda: 15 por brazo","rotacion externa hombro banda elastica"],["Separaciones con banda (pull-aparts): 15","band pull apart banda elastica"],["Flexiones escapulares: 10","flexiones escapulares"],["Sentadillas sin peso: 10",null],["1 serie fácil del primer ejercicio",null]];
-const STRETCH = [["Pecho en marco de puerta (brazo a 90°, sin forzar el hombro derecho)","estiramiento pectoral pared"],["Dorsal: manos en la barra, cadera atrás","estiramiento dorsal de pie"],["Tríceps por encima de la cabeza","estiramiento triceps"],["Cuádriceps de pie","estiramiento cuadriceps de pie"],["Isquios con la pierna en un banco","estiramiento isquiotibiales"],["Flexor de cadera en zancada","estiramiento flexor de cadera"],["Gemelos contra la pared","estiramiento gemelos pared"]];
-const MOB = [["Gato-camello: 10","gato camello movilidad"],["Rotaciones torácicas en cuadrupedia: 10 por lado","rotacion toracica cuadrupedia"],["Sentadilla profunda mantenida: 3 × 30 s","sentadilla profunda movilidad"],["Ángeles en la pared: 2 × 10","angeles en la pared wall angels"],["Estiramiento 90/90 de cadera: 60 s por lado","90 90 cadera movilidad"],["Cobra suave: 3 × 20 s","estiramiento cobra abdomen"],["Rotación externa con banda: 2 × 15 por brazo","rotacion externa hombro banda elastica"]];
+const STRETCH = [["Pecho: brazo apoyado en un poste o en el marco de una puerta, a 90°, y giras el cuerpo hacia el lado contrario. Con el hombro derecho, sin forzar","estiramiento pectoral pared"],["Dorsal: manos en la barra o en una pared y echas la cadera atrás","estiramiento dorsal de pie"],["Tríceps: codo por encima de la cabeza y tiras suave con la otra mano","estiramiento triceps"],["Hombro: cruza el brazo por delante del pecho. Con el derecho, poca tensión","estiramiento hombro brazo cruzado"],["Cuádriceps: de pie, coges el pie y lo llevas al glúteo","estiramiento cuadriceps de pie"],["Isquios: pie en un banco con la pierna recta y te inclinas hacia delante","estiramiento isquiotibiales banco"],["Flexor de cadera: en zancada, con la rodilla de atrás en el suelo, y empujas la cadera adelante","estiramiento flexor de cadera"],["Abdomen (cobra): tumbado boca abajo, estiras los brazos y subes el pecho","estiramiento cobra abdomen"]];
+const STR_TORSO = [0,1,2,3,7], STR_LEGS = [4,5,6];
+const RUN_WARM = [["Caminar rápido: 1 min",null],["Balanceo de pierna adelante y atrás: 10 por pierna","balanceo de piernas calentamiento correr"],["Círculos de tobillo: 10 por lado","circulos de tobillo calentamiento"],["Sentadillas suaves: 10",null],["Zancadas sin peso: 5 por pierna","zancadas sin peso tecnica"]];
 const SHOULDER = "Prohibido: fondos profundos, dominadas con impulso, muscle-ups, ejercicios tras nuca y soltarse de la barra de golpe. Todo con 2 s bajando. Si el hombro se nota inestable, para la serie.";
 
 /* ---------- Running ---------- */
@@ -61,7 +62,7 @@ function thuRun(w){
 function runFor(dow,w){
   const deload = w===4||w===8;
   if(dow===1||dow===2) return {title:"Carrera muy suave",sub:"Al acabar la sesión de "+(dow===1?"empuje":"tirón")+". Debes poder hablar sin esfuerzo.",segs:[{t:deload?10:18,k:"suave"}],range:deload?"10":"15-20"};
-  if(dow===3){const v=WED[w-1]; if(v==="test") return {title:"Test 5 km",sub:"Calienta 5 min andando rápido. Luego 5 km al máximo ritmo que puedas mantener. Apunta el tiempo en Progreso.",segs:[{t:30,k:"rapido"}],test:true};
+  if(dow===3){const v=WED[w-1]; if(v==="test") return {title:"Test 5 km",sub:"Haz el calentamiento de carrera. Luego 5 km al máximo ritmo que puedas mantener. Apunta el tiempo en Progreso.",segs:[{t:30,k:"rapido"}],test:true};
     return {title:"Carrera continua",sub:"Ritmo de conversación todo el rato. Si te ahogas, baja el ritmo.",segs:[{t:v,k:"suave"}]};}
   if(dow===4){const s=thuRun(w);return {title:s.length>1?"Series cortas":"Carrera corta",sub:"Al final de la sesión D de torso.",segs:s};}
   return null;
@@ -106,7 +107,7 @@ const MEALS = [["d","8:30","Desayuno"],["c","14:00","Comida"],["m","17:30","Meri
 const SHOP=[["Huevos M","24 + 12 unidades","8,28 €"],["Pechuga de pollo","1 kg","6,00 €"],["Carne picada mixta","500 g","3,30 €"],["Pan integral de molde","2 paquetes","3,00 €"],["Leche semidesnatada","3 L","2,70 €"],["Queso fresco batido 0 %","2 × 500 g","2,60 €"],["Fruta (naranjas, manzanas)","2 kg","2,50 €"],["Ensalada y tomates","2 bolsas + 1 kg","2,50 €"],["Verdura congelada","2 bolsas","2,40 €"],["Aceite de oliva","1 L al mes","2,00 €"],["Plátanos","1 kg","1,70 €"],["Patatas","malla 3 kg (2 semanas)","1,50 €"],["Arroz","1 kg","1,20 €"],["Copos de avena","500 g","1,00 €"],["Cebolla y ajo","1 kg + 1 cabeza","1,00 €"],["Lentejas cocidas","1 bote","0,90 €"],["Crema de cacahuete","dura 3 semanas","0,80 €"],["Tomate triturado","1 bote","0,70 €"]];
 const TESTS=[["flex","Flexiones máximas","reps",1],["dom","Dominadas máximas","reps",1],["plank","Plancha máxima","s",1],["cint","Cintura (ombligo)","cm",-1],["peso","Peso en ayunas","kg",-1],["k5","5 km","min",-1]];
 
-const DAYSESS = {0:"C",1:"A",2:"B",3:"MOB",4:"D",5:null,6:null};
+const DAYSESS = {0:"C",1:"A",2:"B",3:null,4:"D",5:null,6:null};
 const DL = ["D","L","M","X","J","V","S"];
 const DNAME = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
@@ -133,10 +134,10 @@ const standalone = () => (navigator.standalone===true) || matchMedia("(display-m
 
 /* =================== ESTADO =================== */
 const LSK = "cambio-fisico-v1";
-const DEF = () => ({v:2,start:key(today()),name:"",onboarded:false,log:{},best:0,updated:0,m4:{},meas:{},tests:{w1:{},w12:{}},adj:[],shop:{},plan:{sess:{},menu:{}},recap:{},voice:true});
+const DEF = () => ({v:2,start:key(today()),name:"",onboarded:false,log:{},best:0,updated:0,m4:{},meas:{},tests:{w1:{},w12:{}},adj:[],shop:{},plan:{sess:{},menu:{}},recap:{},voice:true,runs:{}});
 function migrate(s){
   s=Object.assign(DEF(),s||{});
-  s.plan=Object.assign({sess:{},menu:{}},s.plan||{}); s.tests=Object.assign({w1:{},w12:{}},s.tests||{});
+  s.plan=Object.assign({sess:{},menu:{}},s.plan||{}); s.runs=Object.assign({},s.runs); s.tests=Object.assign({w1:{},w12:{}},s.tests||{});
   // v1: repeticiones por índice → por ejercicio
   for(const k in s.log){const l=s.log[k]; if(!l||!l.reps) continue;
     const ks=Object.keys(l.reps); if(!ks.some(x=>/^\d+$/.test(x))) continue;
@@ -166,6 +167,7 @@ function runForD(d){
     if(dow===0){const s=thuRun(w); return {title:s.length>1?"Series cortas":"Carrera corta",sub:"Semana de 4 días: al final de la sesión de piernas.",segs:s};} }
   return runFor(dow,w);
 }
+function stretchFor(d){const c=sessCode(d); return (c&&c!=="C"?STR_TORSO:STR_LEGS).map(i=>STRETCH[i]);}
 function tasksFor(d){const t=[]; if(sessCode(d)) t.push("e"); if(runForD(d)) t.push("r"); return t;}
 const L = k => S.log[k] || {};
 function dayStatus(d){
@@ -264,23 +266,24 @@ function toast(msg,action){
 }
 
 /* =================== HOJA INFERIOR =================== */
-let sheetCleanup=[];
+let sheetCleanup=[], sheetLock=null;
+function tryClose(){ if(sheetLock&&sheetLock()){ $("#sheet").style.transform=""; $("#scrim").style.opacity=""; toast("Termina o descarta la carrera primero"); return; } closeSheet(); }
 function onSheetClose(fn){sheetCleanup.push(fn);}
 function openSheet(html){
   const sh=$("#sheet"),sc=$("#scrim"), first=sh.hidden;
-  sheetCleanup.forEach(f=>{try{f();}catch(e){}}); sheetCleanup=[];
+  sheetCleanup.forEach(f=>{try{f();}catch(e){}}); sheetCleanup=[]; sheetLock=null;
   $("#sheetIn").innerHTML='<div class="grabzone"><div class="grab"></div></div>'+html;
   if(first){sh.hidden=false;sc.hidden=false;requestAnimationFrame(()=>{sh.classList.add("show");sc.classList.add("show");});}
   sh.scrollTop=0; bindDrag();
 }
 function closeSheet(){
   const sh=$("#sheet"),sc=$("#scrim");
-  sheetCleanup.forEach(f=>{try{f();}catch(e){}}); sheetCleanup=[];
+  sheetCleanup.forEach(f=>{try{f();}catch(e){}}); sheetCleanup=[]; sheetLock=null;
   sh.style.transform=""; sh.classList.remove("show","drag"); sc.classList.remove("show"); sc.style.opacity="";
   setTimeout(()=>{if(!sh.classList.contains("show")){sh.hidden=true;sc.hidden=true;}},320); render();
 }
-$("#scrim").onclick=closeSheet;
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden) closeSheet();});
+$("#scrim").onclick=tryClose;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden) tryClose();});
 // Deslizar hacia abajo para cerrar
 function bindDrag(){
   const sh=$("#sheet"), sc=$("#scrim"); let y0=null,dy=0,t0=0,active=false;
@@ -288,7 +291,7 @@ function bindDrag(){
   const move=(y,e)=>{ if(y0==null) return; dy=y-y0; if(!active){ if(dy>6){active=true; sh.classList.add("drag");} else if(dy<-4){y0=null;return;} else return; }
     if(e&&e.cancelable) e.preventDefault(); sh.style.transform=`translateY(${Math.max(0,dy)}px)`; sc.style.opacity=String(Math.max(0,1-dy/400)); };
   const end=()=>{ if(y0==null) return; const v=dy/Math.max(1,performance.now()-t0); sh.classList.remove("drag");
-    if(active && (dy>120||v>.6)) closeSheet(); else {sh.style.transform=""; sc.style.opacity="";} y0=null; active=false; };
+    if(active && (dy>120||v>.6)) tryClose(); else {sh.style.transform=""; sc.style.opacity="";} y0=null; active=false; };
   sh.ontouchstart=e=>start(e.touches[0].clientY, !!e.target.closest(".grabzone"));
   sh.ontouchmove=e=>move(e.touches[0].clientY,e);
   sh.ontouchend=end; sh.ontouchcancel=end;
@@ -333,15 +336,10 @@ const figOf = id => FIG.P[id] ? FIG.svg(FIG.P[id],1) : "";
 function viewEj(d,w){
   const dow=d.getDay(), code=sessCode(d), l=L(key(d));
   if(!code){
+    if(dow===3) return `<div class="hero"><span class="tag">${DNAME[dow]} · Calle</span><h2>Hoy toca correr</h2><p>No hay sesión de fuerza. La sesión de hoy es la carrera continua.</p><button class="cta" id="goRunTab">Ir a Running</button></div>
+    <section><h3>Estiramientos <small>al acabar la carrera · 30 s cada uno</small></h3><div class="plain"><ul>${linkList(stretchFor(d))}</ul></div></section>`;
     return `<div class="hero"><span class="tag">${DNAME[dow]} · Descanso</span><h2>Día de descanso</h2><p>${dow===4?"Semana de 4 días: hoy no hay sesión D. La carrera corta pasó al domingo.":"Viernes y sábado son tus días de doble trabajo. Hoy no toca entrenar y la racha sigue."}</p></div>
-    ${dow===6?`<section><h3>Movilidad opcional <small>15 min antes de dormir</small></h3><div class="plain"><ol>${linkList(MOB)}</ol></div></section>`:""}
     <div class="note"><b>Descanso:</b> duerme 7,5-8 h, a la misma hora cada día y sin pantallas 30 min antes. Es donde se construye el músculo.</div>`;
-  }
-  if(code==="MOB"){
-    return `<div class="hero"><span class="tag">${DNAME[dow]} · Calle</span><h2>Carrera + movilidad</h2><p>Hoy la sesión fuerte es la carrera (pestaña Running). Al volver, 15 min de movilidad.</p>
-      <div class="stats"><div class="stat"><div class="v">15</div><div class="k">min</div></div><div class="stat"><div class="v">7</div><div class="k">ejercicios</div></div></div>
-      ${doneBtn(l.e,"Marcar movilidad hecha","doneE")}</div>
-      <section><h3>Movilidad <small>toca para ver vídeos</small></h3><div class="plain"><ol>${linkList(MOB)}</ol></div></section>`;
   }
   const s=SESS[code], items=getSess(code), sets=items.reduce((a,it)=>a+setsFor(it[1],w),0), k=key(d);
   const doneN=items.reduce((a,it)=>a+Math.min(doneSets(l,it[0]),setsFor(it[1],w)),0);
@@ -357,7 +355,7 @@ function viewEj(d,w){
     <section><h3>Calentamiento <small>10 min</small></h3><div class="plain"><ol>${linkList(WARM)}</ol></div></section>
     <section><h3>Bloque principal <small>toca un ejercicio</small></h3><div class="list">${cards}</div></section>
     <div class="note"><b>Hombro derecho:</b> ${SHOULDER}</div>
-    <section><h3>Estiramientos <small>30 s cada uno</small></h3><div class="plain"><ul>${linkList(STRETCH)}</ul></div></section>`;
+    <section><h3>Estiramientos <small>${code==="C"?"piernas":"torso"} · 30 s cada uno</small></h3>${runForD(d)?'<div class="note" style="margin-bottom:8px"><b>Hoy también corres:</b> haz los estiramientos al acabar la carrera, no entre medias.</div>':""}<div class="plain"><ul>${linkList(stretchFor(d))}</ul></div></section>`;
 }
 function openEx(i){
   const d=parse(ui.sel), w=clampW(weekOf(d)), code=sessCode(d), items=getSess(code);
@@ -420,47 +418,177 @@ function viewRun(d,w){
     <div class="legend"><span><i class="seg-suave"></i>Suave</span>${r.segs.length>1?'<span><i class="seg-rapido"></i>Rápido</span><span><i class="seg-trote"></i>Trote</span>':""}</div>
     ${l.r?"":`<button class="cta" id="goRun"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>${r.test?"Empezar cronómetro":"Empezar carrera guiada"}</button>`}
     ${doneBtn(l.r,"Marcar como hecha","doneR").replace('class="cta ','class="cta '+(l.r?"":"ghost "))}</div>
+    ${runCard(key(d))}
+    <section><h3>Calentamiento <small>antes de correr · 4 min</small></h3><div class="plain"><ol>${linkList(RUN_WARM)}</ol></div></section>
     <section><h3>Cómo se hace</h3><div class="plain">${steps.map(s=>`<div class="step"><div class="n">${s.n}</div><div><div class="t">${esc(s.t)}</div><div class="d">${esc(s.d)}</div></div><div class="r">${esc(s.r)}</div></div>`).join("")}</div></section>
-    <div class="note">La carrera guiada te avisa con voz y vibración en cada cambio de ritmo, y mantiene la pantalla encendida. Los km son una estimación a tu ritmo actual. <a href="${TT("tecnica de carrera principiantes")}" target="_blank" rel="noopener">Vídeos de técnica</a>.</div>`+table;
+    <section><h3>Estiramientos <small>al terminar · 30 s cada uno</small></h3><div class="plain"><ul>${linkList(stretchFor(d))}</ul></div></section>
+    <div class="note">La carrera guiada sigue tu ubicación por GPS: mide distancia, ritmo y tiempo, y al acabar te enseña la ruta en un mapa. Te avisa con voz en cada cambio de ritmo y en cada kilómetro. <b>Deja la pantalla encendida</b> (la app evita que se apague): con el móvil bloqueado, el iPhone deja de enviar la ubicación. <a href="${TT("tecnica de carrera principiantes")}" target="_blank" rel="noopener">Vídeos de técnica</a>.</div>`+table;
 }
 /* Audio y voz */
 let actx=null;
 function unlockAudio(){try{if(!actx){const A=window.AudioContext||window.webkitAudioContext; if(A) actx=new A();} if(actx&&actx.state==="suspended") actx.resume();}catch(e){}}
 function beep(f,d){try{if(!actx) return; const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.0001,actx.currentTime);g.gain.exponentialRampToValueAtTime(.3,actx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d+.02);}catch(e){}}
 function say(t){try{if(!S.voice||!window.speechSynthesis) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="es-ES"; u.rate=1.02; speechSynthesis.speak(u);}catch(e){}}
+/* ---------- GPS: utilidades ---------- */
+const hav=(a,b)=>{const r=Math.PI/180,dLa=(b[0]-a[0])*r,dLo=(b[1]-a[1])*r,x=Math.sin(dLa/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)**2;return 12742e3*Math.asin(Math.sqrt(x));};
+// Recorrido comprimido: [lat, lon, segundos en movimiento, metros acumulados]
+function encTrack(pts){let o="",pv=[0,0,0,0];for(const p of pts){const v=[Math.round(p[0]*1e5),Math.round(p[1]*1e5),Math.round(p[2]),Math.round(p[3])];for(let j=0;j<4;j++){let d=v[j]-pv[j];d=d<0?~(d<<1):d<<1;while(d>=32){o+=String.fromCharCode((32|(d&31))+63);d>>=5;}o+=String.fromCharCode(d+63);}pv=v;}return o;}
+function decTrack(s){const pts=[],v=[0,0,0,0];s=s||"";let i=0,j=0;while(i<s.length){let r=0,sh=0,b;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5;}while(b>=32&&i<s.length);v[j]+=(r&1)?~(r>>1):(r>>1);if(++j===4){pts.push([v[0]/1e5,v[1]/1e5,v[2],v[3]]);j=0;}}return pts;}
+const fmtSK = sk => {if(!isFinite(sk)||sk<=0) return "–"; const s=Math.round(sk); return Math.floor(s/60)+":"+pad(s%60);};
+const fmtDur = s => {s=Math.round(s||0); return s>=3600?Math.floor(s/3600)+":"+pad(Math.floor(s%3600/60))+":"+pad(s%60):fmtT(s);};
+const kmTxt = m => dec(((m||0)/1000).toFixed(2));
+const minWords = s => {s=Math.round(s); const m=Math.floor(s/60), x=s%60; return `${m} ${m===1?"minuto":"minutos"}${x?" "+x+" segundos":""}`;};
+function timeAtDist(pts,D){for(let i=1;i<pts.length;i++){if(pts[i][3]>=D){const a=pts[i-1],b=pts[i],f=(D-a[3])/Math.max(1,b[3]-a[3]);return a[2]+(b[2]-a[2])*f;}}return null;}
+function analyze(rec){
+  const pts=decTrack(rec.trk), dist=rec.dist||0, dur=rec.dur||0, avg=dist>0?dur/(dist/1000):NaN;
+  const splits=[]; let prevT=0;
+  for(let k=1;k*1000<=dist;k++){const t=timeAtDist(pts,k*1000); if(t==null) break; splits.push({lbl:String(k),d:1000,t:t-prevT}); prevT=t;}
+  const rest=dist-splits.length*1000; if(rest>=100) splits.push({lbl:dec((rest/1000).toFixed(2)),d:rest,t:Math.max(1,dur-prevT)});
+  const full=splits.filter(x=>x.d===1000); if(full.length>1){const f=full.reduce((a,x)=>x.t<a.t?x:a); f.best=true;}
+  // Ritmo más rápido: mejor tramo seguido de 500 m (o la mitad si la carrera es corta)
+  const bw=dist>=1000?500:Math.max(100,Math.round(dist/2/50)*50); let best=avg, j=0;
+  if(dist>=200) for(let i=0;i<pts.length;i++){ while(j<pts.length&&pts[j][3]-pts[i][3]<bw) j++; if(j>=pts.length) break;
+    const dd=pts[j][3]-pts[i][3], dt=pts[j][2]-pts[i][2]; if(dd>0&&dt>0){const p=dt/(dd/1000); if(p<best) best=p;} }
+  return {pts,avg,best,bw,splits};
+}
+
+/* ---------- Mapa de la ruta (teselas OpenStreetMap/CARTO + trazado propio) ---------- */
+function isLight(){const t=document.documentElement.dataset.theme; return t?t==="light":matchMedia("(prefers-color-scheme: light)").matches;}
+function routeMap(pts){
+  if(!pts||pts.length<2) return `<div class="rmap empty">Sin recorrido GPS</div>`;
+  const W=340,H=220,TS=256,P=Math.PI/180;
+  const px=(p,z)=>{const n=TS*2**z,s=Math.sin(p[0]*P); return [(p[1]+180)/360*n,(0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*n];};
+  let la0=90,la1=-90,lo0=180,lo1=-180; pts.forEach(p=>{la0=Math.min(la0,p[0]);la1=Math.max(la1,p[0]);lo0=Math.min(lo0,p[1]);lo1=Math.max(lo1,p[1]);});
+  let z=17; for(;z>3;z--){const a=px([la1,lo0],z),b=px([la0,lo1],z); if(b[0]-a[0]<=W*.82&&b[1]-a[1]<=H*.76) break;}
+  const a=px([la1,lo0],z),b=px([la0,lo1],z),ox=(a[0]+b[0])/2-W/2,oy=(a[1]+b[1])/2-H/2,n=2**z,th=isLight()?"light_all":"dark_all";
+  let tiles="";
+  for(let tx=Math.floor(ox/TS);tx<=Math.floor((ox+W)/TS);tx++) for(let ty=Math.floor(oy/TS);ty<=Math.floor((oy+H)/TS);ty++){
+    if(ty<0||ty>=n) continue; const xm=((tx%n)+n)%n;
+    tiles+=`<img alt="" draggable="false" onerror="this.remove()" src="https://${"abcd"[(xm+ty)%4]}.basemaps.cartocdn.com/${th}/${z}/${xm}/${ty}@2x.png" style="left:${((tx*TS-ox)/W*100).toFixed(3)}%;top:${((ty*TS-oy)/H*100).toFixed(3)}%;width:${(TS/W*100).toFixed(3)}%;height:${(TS/H*100).toFixed(3)}%">`;}
+  const xy=pts.map(p=>{const q=px(p,z); return [(q[0]-ox).toFixed(1),(q[1]-oy).toFixed(1)];});
+  // Color por ritmo: tercios de la velocidad suavizada
+  const sp=pts.map((p,i)=>{const j=Math.max(0,i-3),k=Math.min(pts.length-1,i+3),dt=pts[k][2]-pts[j][2]; return dt>0?(pts[k][3]-pts[j][3])/dt:0;});
+  const so=sp.filter(v=>v>0).sort((x,y)=>x-y), q1=so[Math.floor(so.length/3)]||0, q2=so[Math.floor(so.length*2/3)]||0;
+  const COL=["var(--ej)","var(--streak)","var(--run)"], bucket=v=>v>=q2?2:v>=q1?1:0;
+  let segs="",cur=null,path="";
+  for(let i=1;i<xy.length;i++){const bk=bucket(sp[i]); if(bk!==cur){ if(path) segs+=`<path d="${path}" stroke="${COL[cur]}"/>`; path=`M${xy[i-1][0]} ${xy[i-1][1]}`; cur=bk; } path+=`L${xy[i][0]} ${xy[i][1]}`;}
+  if(path) segs+=`<path d="${path}" stroke="${COL[cur]}"/>`;
+  let marks=""; for(let km=1,i=0;i<pts.length;i++){ if(pts[i][3]>=km*1000){ marks+=`<g transform="translate(${xy[i][0]} ${xy[i][1]})"><circle r="7.5" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.5"/><text y="3.2" text-anchor="middle" font-size="9" font-weight="700" fill="var(--fg)">${km}</text></g>`; km++; } }
+  const s0=xy[0],s1=xy[xy.length-1];
+  return `<div class="rmap">${tiles}<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Mapa de la ruta"><path d="M${xy.map(p=>p.join(" ")).join("L")}" fill="none" stroke="var(--bg)" stroke-opacity=".55" stroke-width="7.5" stroke-linejoin="round" stroke-linecap="round"/><g fill="none" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">${segs}</g>${marks}<circle cx="${s1[0]}" cy="${s1[1]}" r="6" fill="var(--fg)" stroke="var(--bg)" stroke-width="2"/><circle cx="${s0[0]}" cy="${s0[1]}" r="6" fill="var(--food)" stroke="var(--bg)" stroke-width="2"/></svg>
+    <div class="rlegend"><span><i style="background:var(--food)"></i>Salida</span><span><i style="background:var(--ej)"></i>Lento</span><span><i style="background:var(--streak)"></i>Medio</span><span><i style="background:var(--run)"></i>Rápido</span></div><div class="attr">© OpenStreetMap · © CARTO</div></div>`;
+}
+function runCard(k){
+  const rec=(S.runs||{})[k]; if(!rec) return ""; const A=analyze(rec);
+  return `<section><h3>Tu carrera <small>medida con GPS</small></h3><div class="runcard" data-runk="${k}" role="button" tabindex="0">${routeMap(A.pts)}
+    <div class="runhero"><div class="big"><span class="v">${kmTxt(rec.dist)}<small>km</small></span><span class="k">Distancia</span></div><div class="big"><span class="v">${fmtDur(rec.dur)}</span><span class="k">Duración</span></div><div class="big"><span class="v">${fmtSK(A.avg)}</span><span class="k">Ritmo /km</span></div></div>
+    <span class="more">Ver ruta y parciales ${CHEV}</span></div></section>`;
+}
+function runHistory(){
+  const ks=Object.keys(S.runs||{}).sort().reverse(); if(!ks.length) return "";
+  return `<section><h3>Carreras con GPS <small>toca una para ver la ruta</small></h3><div class="plain tscroll"><table class="mtable"><tr><th>Día</th><th>Km</th><th>Tiempo</th><th>Ritmo</th></tr>${ks.map(k=>{const x=S.runs[k];return `<tr data-runk="${k}" style="cursor:pointer"><td>${fdate(parse(k))}</td><td>${kmTxt(x.dist)}</td><td>${fmtDur(x.dur)}</td><td>${fmtSK(x.dur/(x.dist/1000))}</td></tr>`;}).join("")}</table></div></section>`;
+}
+function openRunSummary(k){
+  const rec=(S.runs||{})[k]; if(!rec) return; const A=analyze(rec), d=parse(k);
+  openSheet(`<div><div class="eyebrow">${DNAME[d.getDay()]} ${fdate(d)}${rec.partial?" · recuperada":""}</div><h2>${esc(rec.title||"Carrera")}</h2></div>
+    ${routeMap(A.pts)}
+    <div class="grid4">
+      <div class="kpi"><span class="v">${kmTxt(rec.dist)}<small>km</small></span><span class="k">Distancia</span></div>
+      <div class="kpi"><span class="v">${fmtDur(rec.dur)}</span><span class="k">Duración</span></div>
+      <div class="kpi"><span class="v">${fmtSK(A.avg)}<small>/km</small></span><span class="k">Ritmo medio</span></div>
+      <div class="kpi"><span class="v">${fmtSK(A.best)}<small>/km</small></span><span class="k">Ritmo más rápido</span></div>
+    </div>
+    ${A.splits.length?`<div><div class="eyebrow" style="margin-bottom:6px">Parciales por kilómetro</div><div class="plain tscroll"><table class="mtable"><tr><th>Km</th><th>Tiempo</th><th>Ritmo /km</th></tr>${A.splits.map(x=>`<tr class="${x.best?"cur":""}"><td>${x.lbl}${x.best?" ★":""}</td><td>${fmtDur(x.t)}</td><td>${fmtSK(x.t/(x.d/1000))}</td></tr>`).join("")}</table></div></div>`:""}
+    <div class="note">Velocidad media: <b>${dec((rec.dist/Math.max(1,rec.dur)*3.6).toFixed(1))} km/h</b>. Ritmo más rápido = tus mejores ${A.bw} m seguidos. El tiempo no cuenta las pausas.</div>
+    <div class="row2"><button class="btn danger" id="rdel">Borrar recorrido</button><button class="btn p" id="closeS" style="flex:1">Cerrar</button></div>`);
+  $("#closeS").onclick=closeSheet;
+  $("#rdel").onclick=function(){ if(!this.dataset.c){this.dataset.c=1;this.textContent="Pulsa otra vez para borrar";return;}
+    const o=Object.assign({},S.runs); delete o[k]; S.runs=o; save(); closeSheet(); toast("Recorrido borrado"); };
+}
+/* Copia en vivo por si iOS cierra la app en mitad de la carrera */
+const LIVE = LSK+"-live";
+const clearLive = () => {try{localStorage.removeItem(LIVE);}catch(e){}};
+function recoverLive(){
+  try{ const o=JSON.parse(localStorage.getItem(LIVE)||"null"); clearLive();
+    if(!o||!o.k||!(o.dist>=50)||Date.now()-o.at>864e5||(S.runs||{})[o.k]) return;
+    S.runs=Object.assign({},S.runs,{[o.k]:{dur:o.dur,dist:o.dist,trk:o.trk,at:o.at,title:o.title,partial:true}}); save();
+    setTimeout(()=>toast("Carrera sin terminar recuperada",{label:"Ver",fn:()=>openRunSummary(o.k)}),700);
+  }catch(e){}
+}
+
+/* ---------- Carrera guiada con GPS ---------- */
 function openRun(){
-  const d=parse(ui.sel), r=runForD(d); if(!r) return;
+  const k=ui.sel, d=parse(k), r=runForD(d); if(!r) return;
   const segs=r.test?null:r.segs, total=segs?segs.reduce((a,s)=>a+s.t*60,0):0;
-  let state="ready", t0=0, acc=0, tm=null, lastIdx=-1, wake=null;
+  let state="ready", t0=0, acc=0, tm=null, lastIdx=-1, wake=null, kmSaid=0, liveT=0, keepVoice=false;
+  const G={pts:[],dist:0,acc:null,err:null,last:null,gap:true,id:null};
   const elapsed=()=>acc+(state==="run"?(Date.now()-t0)/1000:0);
+  const started=()=>state==="run"||state==="pause";
   const segAt=e=>{let c=0; for(let i=0;i<segs.length;i++){c+=segs[i].t*60; if(e<c) return {i,left:c-e};} return {i:segs.length,left:0};};
   openSheet(`<div><div class="eyebrow">${DNAME[d.getDay()]} · Semana ${clampW(weekOf(d))}</div><h2>${esc(r.title)}</h2></div>
-    <div class="card runtimer"><div class="ph2" id="rph">${r.test?"Cronómetro":"Preparado"}</div><div class="clock" id="rclock">${r.test?"0:00":fmtT(total)}</div><div class="eyebrow" id="rsub">${r.test?"5 km al máximo ritmo":"Tiempo restante"}</div>
-    ${segs?`<div class="segbar" style="width:100%">${segs.map((s,i)=>`<div class="seg-${s.k}" data-sg="${i}" style="flex:${s.t};opacity:.45"></div>`).join("")}</div>`:""}</div>
+    <div class="card runtimer"><div class="ph2" id="rph">${r.test?"Cronómetro":"Preparado"}</div><div class="clock" id="rclock">${r.test?"0:00":fmtT(total)}</div><div class="eyebrow" id="rsub">${r.test?"5 km al máximo ritmo · para solo a los 5 km":"Tiempo restante"}</div>
+    ${segs?`<div class="segbar" style="width:100%">${segs.map((s,i)=>`<div class="seg-${s.k}" data-sg="${i}" style="flex:${s.t};opacity:.45"></div>`).join("")}</div>`:""}
+    <div class="livegrid"><div class="big"><span class="v" id="gDist">0,00<small>km</small></span><span class="k">Distancia</span></div><div class="big"><span class="v" id="gCur">–</span><span class="k">Ritmo actual</span></div><div class="big"><span class="v" id="gAvg">–</span><span class="k">Ritmo medio</span></div></div>
+    <div class="gps" id="gps"><i></i><span>Buscando señal GPS…</span></div></div>
     <div class="row2"><button class="cta" id="rgo" style="flex:1">Empezar</button></div>
     <div class="switch"><span>Avisos por voz</span><button class="tg ${S.voice?"on":""}" id="rvoice" role="switch" aria-checked="${!!S.voice}" aria-label="Avisos por voz"></button></div>
-    <div class="row2"><button class="btn" id="rfin">Terminar y marcar hecha</button><button class="btn" id="closeS">Cerrar</button></div>`);
-  const ui2=()=>{const e=elapsed();
-    if(!segs){$("#rclock").textContent=fmtT(Math.floor(e));return;}
+    <div class="row2"><button class="btn" id="rfin">Terminar y guardar</button><button class="btn" id="closeS">Cerrar</button></div>`);
+  sheetLock=started;
+  const gpsUI=()=>{ const el=$("#gps"); if(!el) return; let cls="",txt;
+    if(G.err){cls="bad";txt=G.err;} else if(G.acc==null) txt="Buscando señal GPS…";
+    else if(G.acc>35) txt=`Señal GPS débil (±${Math.round(G.acc)} m). Sal al aire libre y espera unos segundos.`;
+    else {cls="ok";txt=`GPS listo · precisión ±${Math.round(G.acc)} m`;}
+    el.className="gps "+cls; el.lastChild.textContent=txt;
+    const e=elapsed(); $("#gDist").innerHTML=kmTxt(G.dist)+"<small>km</small>";
+    $("#gAvg").textContent=G.dist>=50?fmtSK(e/(G.dist/1000)):"–";
+    let cur="–"; const P=G.pts; if(state==="run"&&P.length>1){let i=P.length-1; while(i>0&&P[i-1][2]>=e-30) i--; const a=P[i], dd=P[P.length-1][3]-a[3], dt=P[P.length-1][2]-a[2]; if(P[P.length-1][2]>=e-30&&dd>=20&&dt>0) cur=fmtSK(dt/(dd/1000));}
+    $("#gCur").textContent=cur; };
+  const backup=()=>{const now=Date.now(); if(now-liveT<10000) return; liveT=now;
+    try{localStorage.setItem(LIVE,JSON.stringify({k,title:r.title,at:now,dur:Math.round(elapsed()),dist:Math.round(G.dist),trk:encTrack(G.pts)}));}catch(e){}};
+  const kmCheck=()=>{ const n=Math.floor(G.dist/1000);
+    if(r.test&&G.dist>=5000&&state==="run"){ const t=timeAtDist(G.pts,5000)||elapsed(); hap(2); beep(988,.3); say(`Cinco kilómetros en ${minWords(t)}. Test completado.`); finish(false,t); return; }
+    if(n>kmSaid){ kmSaid=n; hap(2); beep(784,.2); say(`Kilómetro ${n}. Ritmo medio ${minWords(elapsed()/(G.dist/1000))} por kilómetro.`); } };
+  const onPos=pos=>{ const c=pos.coords; G.acc=c.accuracy; G.err=null;
+    if(state==="run"&&c.accuracy<=35){ const p=[c.latitude,c.longitude,elapsed()]; let ok=true;
+      if(G.last&&!G.gap){ const dd=hav(G.last,p), dt=p[2]-G.last[2];
+        if(dd<Math.max(4,c.accuracy/2)) ok=false;       // quieto o ruido del GPS
+        else if(dt>0&&dd/dt>9) ok=false;                 // salto imposible (> 32 km/h)
+        else G.dist+=dd; }
+      if(ok){ p.push(Math.round(G.dist)); G.pts.push(p); G.last=p; G.gap=false; backup(); kmCheck(); } }
+    if(state!=="done") gpsUI(); };
+  const onErr=err=>{ G.err=err.code===1?"Sin permiso de ubicación. Actívalo en Ajustes → Privacidad y seguridad → Localización → Sitios web de Safari.":null; gpsUI(); };
+  if(navigator.geolocation){ try{ G.id=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:0,timeout:30000}); }catch(e){ G.err="GPS no disponible en este navegador."; } }
+  else G.err="GPS no disponible en este navegador.";
+  gpsUI();
+  const ui2=()=>{ const e=elapsed(); gpsUI();
+    if(!segs){$("#rclock").textContent=fmtDur(e);return;}
     const s=segAt(e);
     if(s.i>=segs.length){ $("#rclock").textContent="0:00"; $("#rph").textContent="¡Terminado!"; finish(true); return; }
     $("#rclock").textContent=fmtT(Math.ceil(total-e)); $("#rph").textContent=PNAME[segs[s.i].k]+" · "+fmtT(Math.ceil(s.left));
     $("#rsub").textContent=`Tramo ${s.i+1} de ${segs.length} · ritmo ${fmtPace(PACE[segs[s.i].k])} /km`;
-    $$("[data-sg]").forEach(x=>x.style.opacity=+x.dataset.sg<s.i?"1":+x.dataset.sg===s.i?"1":".45");
+    $$("[data-sg]").forEach(x=>x.style.opacity=+x.dataset.sg<=s.i?"1":".45");
     if(s.i!==lastIdx){ if(lastIdx>=0||state==="run"){hap(2); beep(segs[s.i].k==="rapido"?988:660,.25); say(`${PNAME[segs[s.i].k]}. ${segs[s.i].t} ${segs[s.i].t===1?"minuto":"minutos"}`);} lastIdx=s.i; }
   };
   async function lock(){try{ if(navigator.wakeLock) wake=await navigator.wakeLock.request("screen"); }catch(e){}}
-  function finish(auto){ if(state==="done") return; state="done"; clearInterval(tm); try{wake&&wake.release();}catch(e){}
-    if(auto) say("Carrera completada. Buen trabajo.");
-    mutate(()=>{const l=(S.log[ui.sel]=S.log[ui.sel]||{}); l.r=1;}); closeSheet(); }
+  function finish(auto,testT){ if(state==="done") return; const e=elapsed(); state="done"; clearInterval(tm); try{wake&&wake.release();}catch(x){}
+    keepVoice=true; if(auto) say("Carrera completada. Buen trabajo.");
+    const pts=testT?G.pts.filter(p=>p[3]<=5000):G.pts;
+    const rec=G.dist>=50&&pts.length>1?{dur:Math.round(testT||e),dist:testT?5000:Math.round(G.dist),trk:encTrack(pts),at:Date.now(),title:r.title}:null;
+    clearLive();
+    mutate(()=>{ const l=(S.log[k]=S.log[k]||{}); l.r=1;
+      if(rec) S.runs=Object.assign({},S.runs,{[k]:rec});
+      if(rec&&testT&&clampW(weekOf(d))===12&&(S.tests.w12||{}).k5==null){S.tests=JSON.parse(JSON.stringify(S.tests)); S.tests.w12.k5=Math.round(rec.dur/6)/10;} });
+    if(rec) openRunSummary(k); else closeSheet(); }
   $("#rgo").onclick=()=>{unlockAudio(); hap();
-    if(state==="run"){acc=elapsed(); state="pause"; clearInterval(tm); $("#rgo").textContent="Seguir"; return;}
+    if(state==="done") return;
+    if(state==="run"){acc=elapsed(); state="pause"; G.gap=true; clearInterval(tm); $("#rgo").textContent="Seguir"; gpsUI(); return;}
     if(state==="ready"&&segs){say(`Empezamos. ${PNAME[segs[0].k]}, ${segs[0].t} minutos.`); lastIdx=0;}
+    if(state==="ready"&&!segs) say("Empezamos. Cinco kilómetros.");
     state="run"; t0=Date.now(); $("#rgo").textContent="Pausa"; lock(); tm=setInterval(ui2,250); ui2();};
   $("#rvoice").onclick=()=>{S.voice=!S.voice; save(); $("#rvoice").classList.toggle("on",S.voice);};
   $("#rfin").onclick=()=>finish(false);
-  $("#closeS").onclick=closeSheet;
-  onSheetClose(()=>{clearInterval(tm); try{wake&&wake.release();}catch(e){} try{speechSynthesis.cancel();}catch(e){}});
+  $("#closeS").onclick=function(){ if(started()&&G.dist>0&&!this.dataset.c){this.dataset.c=1;this.textContent="¿Descartar? Pulsa otra vez";return;} state="done"; clearLive(); closeSheet(); };
+  onSheetClose(()=>{ clearInterval(tm); try{wake&&wake.release();}catch(e){} if(!keepVoice) try{speechSynthesis.cancel();}catch(e){} try{G.id!=null&&navigator.geolocation.clearWatch(G.id);}catch(e){} });
   const vis=()=>{ if(document.visibilityState==="visible"&&state==="run") lock(); }; document.addEventListener("visibilitychange",vis); onSheetClose(()=>document.removeEventListener("visibilitychange",vis));
 }
 
@@ -548,7 +676,7 @@ function chart(points,unit){
 function weekSummary(d){
   const ws=addD(d,-d.getDay()); let e=[0,0],r=[0,0],m=0,ok=0,reps=0,km=0,av=0; const days=[];
   for(let i=0;i<7;i++){const x=addD(ws,i),k=key(x),l=L(k),t=tasksFor(x);
-    if(t.includes("e")){e[1]++; if(l.e) e[0]++;} if(t.includes("r")){r[1]++; if(l.r){r[0]++; km+=runStats(runForD(x)).kmN;}}
+    if(t.includes("e")){e[1]++; if(l.e) e[0]++;} if(t.includes("r")){r[1]++; if(l.r){r[0]++; const g=(S.runs||{})[k]; km+=g&&g.dist?g.dist/1000:(runForD(x)?runStats(runForD(x)).kmN:0);}}
     m+=(l.m||[]).filter(Boolean).length; const st=dayStatus(x); if(st==="done"||(st==="rest"&&x<=TODAY)) ok++; if(st!=="out"&&st!=="future") av++; days.push(st);
     Object.values(l.reps||{}).forEach(a=>a.forEach(v=>{if(v!=null) reps+=v;}));}
   return {e,r,m,ok,reps,km,days,ws,av:Math.max(1,av),any:e[0]+r[0]+m>0};
@@ -585,6 +713,7 @@ function viewProg(d){
   <section><h3>Peso <small>kg</small></h3><div class="card">${chart(ms.filter(x=>x.kg!=null).map(x=>({d:x.d,v:x.kg})),"kg")}</div></section>
   <section><h3>Cintura <small>cm</small></h3><div class="card">${chart(ms.filter(x=>x.cm!=null).map(x=>({d:x.d,v:x.cm})),"cm")}</div></section>
   ${ms.length?`<section><h3>Historial</h3><div class="plain tscroll"><table class="mtable"><tr><th>Lunes</th><th>Peso</th><th>Cintura</th><th></th></tr>${[...ms].reverse().map(x=>`<tr><td>${fdate(x.d)}</td><td>${x.kg!=null?dec(x.kg):"–"}</td><td>${x.cm!=null?dec(x.cm):"–"}</td><td><button class="x" data-delm="${x.k}" aria-label="Borrar pesaje">×</button></td></tr>`).join("")}</table></div></section>`:""}
+  ${runHistory()}
   <section><h3>Tests <small>semana 1 vs semana 12</small></h3><div class="plain tscroll"><table class="mtable"><tr><th>Test</th><th>Sem. 1</th><th>Sem. 12</th><th>Cambio</th></tr>${testRows}</table></div>
   <div class="note" style="margin-top:8px">Hazlos el mismo día y a la misma hora. El 5 km es el test del miércoles de la semana 12. Verde = mejora.</div></section>`;
 }
@@ -621,7 +750,7 @@ function openRecap(ws){
     <div class="score">${Math.round(sm.ok/sm.av*100)} %</div>
     <p style="margin:0;font-size:17px;font-weight:600">${verdict(sm)}</p>
     <div class="dayrow">${sm.days.map((s,i)=>`<div><i class="${s}">${s==="done"?CHECK:""}</i>${DL[i]}</div>`).join("")}</div>
-    <div class="grid4"><div class="kpi"><span class="v">${sm.e[0]}<small>/${sm.e[1]}</small></span><span class="k">Entrenos</span></div><div class="kpi"><span class="v">${dec(sm.km.toFixed(1))}<small>km</small></span><span class="k">Corridos (aprox.)</span></div>
+    <div class="grid4"><div class="kpi"><span class="v">${sm.e[0]}<small>/${sm.e[1]}</small></span><span class="k">Entrenos</span></div><div class="kpi"><span class="v">${dec(sm.km.toFixed(1))}<small>km</small></span><span class="k">Corridos</span></div>
     <div class="kpi"><span class="v">${sm.m}<small>/28</small></span><span class="k">Comidas del plan</span></div><div class="kpi"><span class="v">${miles(sm.reps)}</span><span class="k">Repeticiones</span></div></div>
     ${best.length?`<div class="banner g"><b>Récords de la semana</b>${best.map(esc).join(" · ")}</div>`:""}
     <div class="note">Racha actual: <b>${streak()} días</b>. Mejor racha: <b>${Math.max(S.best||0,streak())} días</b>.</div>
@@ -709,7 +838,7 @@ function openAdmin(page){
     h=`${adminHead("Acerca de","home")}
     <div style="width:84px;height:84px;border-radius:22px;overflow:hidden">${LOGO}</div>
     <div><div style="font-family:var(--display);font-size:28px;font-weight:800;text-transform:uppercase">Cambio Físico</div><div class="sync">Versión ${VERSION} · hecha a medida</div></div>
-    <p style="margin:0;color:var(--muted)">Plan de 12 semanas: 5 entrenos, 4 carreras y 4 comidas al día. Los tres colores del logo son tus tres pilares: ejercicio, running y alimentación, subiendo.</p>
+    <p style="margin:0;color:var(--muted)">Plan de 12 semanas: 4 entrenos, 4 carreras y 4 comidas al día. Los tres colores del logo son tus tres pilares: ejercicio, running y alimentación, subiendo.</p>
     <div class="note">Ilustraciones animadas propias. Fuentes Barlow Condensed e Inter (licencia libre). Sin anuncios, sin cuentas, sin rastreo. Coste: 0 €.</div>`;
   }
   openSheet(h);
@@ -774,7 +903,7 @@ function drawOb(){
   const ob=$("#ob"), N=5, dots=`<div class="dots">${Array.from({length:N},(_,i)=>`<i class="${i===obStep?"on":""}"></i>`).join("")}</div>`;
   let h="";
   if(obStep===0) h=`<div class="logo">${LOGO}</div><h1>Cambio<br>físico</h1><p>Tu plan de 12 semanas en el bolsillo. Cada día sabrás qué entrenar, cuánto correr y qué comer.</p>
-    <div class="pillars"><div><i style="background:var(--ej)"></i><b>Ejercicio</b><span>5 sesiones, ilustradas</span></div><div><i style="background:var(--run)"></i><b>Running</b><span>Carreras guiadas por voz</span></div><div><i style="background:var(--food)"></i><b>Comida</b><span>Recetas al gramo</span></div></div>
+    <div class="pillars"><div><i style="background:var(--ej)"></i><b>Ejercicio</b><span>4 sesiones, ilustradas</span></div><div><i style="background:var(--run)"></i><b>Running</b><span>Carreras guiadas por voz</span></div><div><i style="background:var(--food)"></i><b>Comida</b><span>Recetas al gramo</span></div></div>
     <button class="cta" id="obNext" style="--acc:var(--ej)">Empezar</button>`;
   if(obStep===1) h=`<h1>Hola</h1><p>Dos datos para personalizarla.</p>
     <div class="field"><label for="obName">¿Cómo te llamas?</label><input id="obName" value="${esc(obData.name)}" autocomplete="given-name" placeholder="Tu nombre"></div>
@@ -818,6 +947,8 @@ function bindMain(){
   const de=$("#doneE"); if(de) de.onclick=()=>{hap(); mutate(()=>{const l=ens(); l.e=l.e?0:1;}); render();};
   const dr=$("#doneR"); if(dr) dr.onclick=()=>{hap(); mutate(()=>{const l=ens(); l.r=l.r?0:1;}); render();};
   const gr=$("#goRun"); if(gr) gr.onclick=()=>{hap(); unlockAudio(); openRun();};
+  const grt=$("#goRunTab"); if(grt) grt.onclick=()=>{hap(); ui.tab="run"; try{localStorage.setItem(LSK+"-tab",ui.tab);}catch(e){} render(); window.scrollTo(0,0);};
+  $$("[data-runk]").forEach(b=>b.onclick=()=>{hap(); openRunSummary(b.dataset.runk);});
   $$(".ex").forEach(b=>b.onclick=()=>{hap(); openEx(+b.dataset.i);});
   $$("[data-open]").forEach(b=>b.onclick=()=>{const i=b.dataset.open; ui.open[i]=!ui.open[i]; render();});
   $$("[data-two]").forEach(b=>b.onclick=()=>{ui.two=b.dataset.two==="1"; render();});
@@ -841,6 +972,7 @@ if(window.PWA && "serviceWorker" in navigator && (location.protocol==="https:"||
   let reloaded=false; navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(!reloaded){reloaded=true; location.reload();} });
 }
 
+recoverLive();
 render();
 maybeOnboard();
 maybeRecap();
