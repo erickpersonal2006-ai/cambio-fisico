@@ -316,3 +316,21 @@ canvas.fx{position:fixed;inset:0;z-index:70;pointer-events:none;width:100%;heigh
 .dayrow i.miss{border:1.5px solid var(--bad)}
 .dayrow i svg{width:14px;height:14px;stroke:#14110A}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* Carrera con GPS */
+.livegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;text-align:left}
+.livegrid .big .v{font-size:26px}
+.gps{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);text-align:left}
+.gps i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.gps.ok i{background:var(--food)} .gps.bad i{background:var(--bad)} .gps.bad{color:var(--bad)}
+.rmap{position:relative;width:100%;aspect-ratio:340/220;border-radius:16px;overflow:hidden;background:var(--surface2);isolation:isolate}
+.rmap img{position:absolute;max-width:none;display:block;user-select:none;-webkit-user-select:none}
+.rmap svg{position:absolute;inset:0;width:100%;height:100%}
+.rmap.empty{display:grid;place-items:center;color:var(--muted);font-size:13px;aspect-ratio:340/120}
+.rmap .attr{position:absolute;right:6px;bottom:5px;font-size:9px;color:var(--muted);background:color-mix(in srgb,var(--surface) 80%,transparent);padding:1px 6px;border-radius:6px}
+.rlegend{position:absolute;left:6px;top:6px;display:flex;gap:8px;flex-wrap:wrap;font-size:10px;font-weight:600;color:var(--fg);background:color-mix(in srgb,var(--surface) 85%,transparent);padding:4px 8px;border-radius:8px}
+.rlegend span{display:flex;align-items:center;gap:4px}
+.rlegend i{width:8px;height:8px;border-radius:50%}
+.runcard{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;cursor:pointer}
+.runcard .more{display:flex;justify-content:flex-end;align-items:center;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.mtable tr.cur td{color:var(--run);font-weight:700}
