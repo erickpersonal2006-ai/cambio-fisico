@@ -1,4 +1,4 @@
-const CACHE = "cf-2.0.0-48ec5c948b";
+const CACHE = "cf-2.0.0-0ce3232e13";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icons/favicon.svg", "icons/icon-180.png", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "fonts/BarlowCondensed-600-latin-ext.woff2", "fonts/BarlowCondensed-600-latin.woff2", "fonts/BarlowCondensed-700-latin-ext.woff2", "fonts/BarlowCondensed-700-latin.woff2", "fonts/BarlowCondensed-800-latin-ext.woff2", "fonts/BarlowCondensed-800-latin.woff2", "fonts/Inter-400-latin-ext.woff2", "fonts/Inter-400-latin.woff2", "fonts/Inter-500-latin-ext.woff2", "fonts/Inter-500-latin.woff2", "fonts/Inter-600-latin-ext.woff2", "fonts/Inter-600-latin.woff2", "fonts/Inter-700-latin-ext.woff2", "fonts/Inter-700-latin.woff2"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
