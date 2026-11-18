@@ -161,6 +161,9 @@ section h3 small{font-family:var(--body);font-size:12px;font-weight:500;color:va
 .segbar div{min-width:3px}
 .seg-suave{background:color-mix(in srgb,var(--run) 45%,var(--surface2))}
 .seg-rapido{background:var(--run)}
+.seg-tempo{background:color-mix(in srgb,var(--run) 72%,var(--surface2))}
+.seg-calma{background:color-mix(in srgb,var(--run) 45%,var(--surface2))}
+.seg-rapido5{background:var(--run)}
 .seg-trote{background:color-mix(in srgb,var(--run) 22%,var(--surface2))}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -367,6 +370,12 @@ canvas.fx{position:fixed;inset:0;z-index:70;pointer-events:none;width:100%;heigh
 .runcard{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;cursor:pointer}
 .runcard .more{display:flex;justify-content:flex-end;align-items:center;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
 .mtable tr.cur td{color:var(--run);font-weight:700}
+
+/* Niveles y tests */
+.lvbox{display:flex;flex-direction:column;gap:10px}
+.lvbox:empty{display:none}
+.btn.small{align-self:flex-start;padding:6px 12px;font-size:13px}
+.mtable.tests input{width:58px}
 </style>
 </head>
 <body>
@@ -551,7 +560,7 @@ const FIG = (() => {
 })();
 </script>
 <script>"use strict";
-const VERSION = "2.1.0";
+const VERSION = "2.2.0";
 const LOGO = '<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#12141B"/><g transform="translate(256 268) skewX(-14)"><rect x="-150" y="20" width="76" height="120" rx="38" fill="#8592FF"/><rect x="-38" y="-60" width="76" height="200" rx="38" fill="#FF7A3D"/><rect x="74" y="-140" width="76" height="280" rx="38" fill="#38D38A"/></g></svg>';
 const TT = q => "https://www.tiktok.com/search?q=" + encodeURIComponent(q);
 const RED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -583,6 +592,7 @@ const EX = {
   deadbug:{n:"Dead bug",q:"dead bug ejercicio abdomen",how:["Boca arriba, brazos al techo y rodillas a 90°.","Estira brazo y pierna contrarios sin despegar la zona lumbar.","Vuelve y cambia de lado."]},
   flexPies:{n:"Flexiones con pies elevados",q:"flexiones declinadas pies elevados",how:["Pies sobre un banco o escalón, manos en el suelo.","Baja en 2 s con el cuerpo recto.","Semanas 1-3: hazlas normales."]},
   dominadasD:{n:"Dominadas o negativas",q:"dominadas estrictas tecnica",how:["Haz tus dominadas máximas menos 1 en cada serie.","Si no sale ninguna, haz negativas de 5 s.","Siempre sin impulso."]},
+  hollow:{n:"Hollow body",q:"hollow body hold tecnica",how:["Tumbado boca arriba, lumbar pegada al suelo, piernas y brazos estirados en el aire, aguanta."]},
   pullapart:{n:"Separaciones con banda",q:"band pull apart banda elastica",how:["Banda delante del pecho, brazos estirados.","Abre los brazos hasta tocar el pecho con la banda.","Junta las escápulas y vuelve despacio."]}
 };
 const SESS = {
@@ -597,32 +607,106 @@ const STR_TORSO = [0,1,2,3,7], STR_LEGS = [4,5,6];
 const RUN_WARM = [["Caminar rápido: 1 min",null],["Balanceo de pierna adelante y atrás: 10 por pierna","balanceo de piernas calentamiento correr"],["Círculos de tobillo: 10 por lado","circulos de tobillo calentamiento"],["Sentadillas suaves: 10",null],["Zancadas sin peso: 5 por pierna","zancadas sin peso tecnica"]];
 const SHOULDER = "Prohibido: fondos profundos, dominadas con impulso, muscle-ups, ejercicios tras nuca y soltarse de la barra de golpe. Todo con 2 s bajando. Si el hombro se nota inestable, para la serie.";
 
+/* ---------- Niveles de progresión ---------- */
+const LEVELS = {
+  flexiones:[
+    {n:"Flexiones",r:"6-12",q:"flexiones tecnica correcta",how:"Cuerpo recto, baja en 2 s y empuja fuerte sin hundir la cadera."},
+    {n:"Flexiones con pausa 2 s abajo",r:"6-10",q:"flexiones con pausa abajo",how:"Abajo, aguanta 2 s a 2-3 cm del suelo y sube explosivo."},
+    {n:"Flexiones con pies elevados",r:"6-10",q:"flexiones declinadas pies elevados",how:"Pies en un banco o escalón, cuerpo recto, baja en 2 s."},
+    {n:"Flexiones con mochila",r:"6-10",q:"flexiones con mochila peso",how:"Mochila con peso bien ajustada a la espalda. Misma técnica."},
+    {n:"Flexiones arqueras",r:"4-8 / lado",q:"flexiones arqueras archer push up",how:"Manos muy abiertas. Baja hacia un lado con el otro brazo casi estirado."}],
+  pica:[
+    {n:"Flexiones en pica",r:"6-10",q:"flexiones en pica pike push up",how:"V invertida. Baja la cabeza por delante de las manos."},
+    {n:"Pica con pies en banco",r:"5-8",q:"pike push up pies elevados",how:"Pies en un banco y cadera alta. Sin forzar el hombro derecho."},
+    {n:"Pica con pies en banco y pausa 2 s",r:"5-8",q:"pike push up pies elevados pausa",how:"Igual, con 2 s de pausa abajo sin apoyar la cabeza."}],
+  diamante:[
+    {n:"Diamante inclinadas en banco",r:"8-12",q:"flexiones diamante inclinadas banco",how:"Manos en diamante sobre un banco y codos pegados al cuerpo."},
+    {n:"Flexiones diamante",r:"6-10",q:"flexiones diamante tecnica",how:"En el suelo, codos pegados al cuerpo."},
+    {n:"Diamante con pausa",r:"6-10",q:"flexiones diamante con pausa",how:"Pausa de 2 s abajo, sin apoyar el pecho."}],
+  dominadas:[
+    {n:"Dominadas estrictas",s:5,r:"1-3",q:"dominadas estrictas tecnica",how:"Sin impulso. Barbilla sobre la barra y bajada controlada."},
+    {n:"Dominadas estrictas",s:4,r:"3-5",q:"dominadas estrictas tecnica",how:"Sin impulso. Deja 1 rep en reserva."},
+    {n:"Dominadas estrictas",s:4,r:"6-8",q:"dominadas estrictas tecnica",how:"Sin impulso. Baja en 2-3 s."},
+    {n:"Dominadas con mochila ligera",s:4,r:"4-6",q:"dominadas lastradas con mochila",how:"Mochila ligera. Si el hombro protesta, vuelve al nivel anterior."}],
+  remo:[
+    {n:"Remo australiano en barra alta",r:"8-12",q:"remo australiano barra alta",how:"Barra a la altura del pecho, cuerpo recto."},
+    {n:"Remo australiano en barra baja",r:"8-12",q:"remo australiano barra baja",how:"Barra a la altura de la cadera: cuerpo más horizontal."},
+    {n:"Remo australiano con pies elevados",r:"8-12",q:"remo australiano pies elevados",how:"Pies en un banco, cuerpo paralelo al suelo."},
+    {n:"Remo australiano con pausa 2 s arriba",r:"8-10",q:"remo australiano pausa arriba",how:"Pecho en la barra y escápulas juntas 2 s."}],
+  sentadilla:[
+    {n:"Sentadilla con mochila ligera",r:"12-20",q:"sentadilla con mochila en casa",how:"Mochila ligera. Muslos paralelos al suelo."},
+    {n:"Sentadilla con mochila llena",r:"12-20",q:"sentadilla con mochila en casa",how:"Mochila llena y bien ajustada."},
+    {n:"Sentadilla con mochila llena y pausa 2 s",r:"10-15",q:"sentadilla con pausa abajo",how:"Abajo, aguanta 2 s sin rebotar."}],
+  bulgara:[
+    {n:"Sentadilla búlgara sin peso",r:"8-12 / pierna",q:"sentadilla bulgara tecnica",how:"Pie trasero en un banco. Baja en vertical."},
+    {n:"Sentadilla búlgara con mochila",r:"8-12 / pierna",q:"sentadilla bulgara con mochila",how:"Mochila a la espalda. Misma técnica."}],
+  plancha:[
+    {n:"Plancha",r:"30-45 s",q:"plancha abdominal tecnica correcta",how:"Cuerpo recto de cabeza a talones."},
+    {n:"Plancha con toque de hombro",r:"20-30 toques",q:"plancha toque de hombro",how:"En plancha alta, toca el hombro contrario sin girar la cadera."}],
+  rodillas:[
+    {n:"Rodillas al pecho colgado",r:"8-12",q:"elevacion de rodillas en barra",how:"Sin balanceo. Nunca te sueltes de golpe."},
+    {n:"Piernas rectas colgado",r:"6-10",q:"elevacion de piernas rectas en barra",how:"Piernas estiradas hasta la horizontal, sin balanceo."}]
+};
+
 /* ---------- Running ---------- */
-const PACE = {suave:7.0, rapido:5.75, trote:7.5};
-const PNAME = {suave:"Suave", rapido:"Rápido", trote:"Trote"};
-const fmtPace = p => Math.floor(p)+":"+String(Math.round((p%1)*60)).padStart(2,"0");
-function intervals(warm,reps,fast,slow){const s=[{t:warm,k:"suave"}];for(let i=0;i<reps;i++){s.push({t:fast,k:"rapido"});s.push({t:slow,k:"trote"});}return s;}
-const WED = [20,25,30,20,30,35,40,25,40,45,45,"test"];
-function thuRun(w){
-  if(w<=3) return [{t:15,k:"suave"}];
-  if(w===4||w===8||w===12) return [{t:10,k:"suave"}];
-  if(w===5||w===6) return intervals(5,6,1,1);
-  if(w===7||w===9) return intervals(5,8,1,1);
-  if(w===10) return intervals(5,5,2,1);
-  return intervals(5,6,2,1);
+const PNAME = {suave:"Suave", rapido:"Rápido", rapido5:"Rápido", tempo:"Tempo", trote:"Trote", calma:"Vuelta a la calma"};
+const PDESC = {suave:"suave", rapido:"rápido", rapido5:"rápido", tempo:"tempo", trote:"trote", calma:"vuelta a la calma"};
+const PHINT = {suave:"ritmo de conversación", rapido:"2-3 palabras", rapido5:"fuerte y constante", tempo:"cómodo-duro, frases cortas", trote:"recuperación, muy suave", calma:"muy suave"};
+const fmtPace = p => {const s=Math.round(p*60); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");};
+const fmtMin = fmtPace;
+const parseMin = v => {v=String(v).trim(); if(!v) return null;
+  if(v.includes(":")){const [a,b]=v.split(":").map(Number); return isFinite(a)&&isFinite(b)?Math.round((a+b/60)*1000)/1000:null;}
+  const n=parseFloat(v.replace(",",".")); return isFinite(n)?n:null;};
+// Base P (min/km) = último test de 5 km / 5
+function testBase(){ const T=S.tests||{};
+  for(const [wk,n] of [["w12",12],["w6",6],["w1",1]]){const v=(T[wk]||{}).k5; if(v>0) return {P:v/5,src:n};}
+  return {P:5+35/60,src:null}; }
+const POFF = {suave:1.25, calma:1.25, rapido:-0.25, rapido5:-5/60, tempo:20/60, trote:1.75};
+const pace = k => testBase().P + (POFF[k]||0);
+const paceTxt = k => (k==="suave"||k==="calma") ? fmtPace(testBase().P+1)+"-"+fmtPace(testBase().P+1.5) : fmtPace(pace(k));
+const paceToast = () => `Ritmos actualizados: suave ${paceTxt("suave")}, series ${fmtPace(pace("rapido"))}`;
+const minTxt = t => {const n=Math.floor(t), half=Math.abs(t-n-.5)<1e-6;
+  if(half) return n===1?"1 minuto y medio":n+" minutos y medio"; return t===1?"1 minuto":t+" minutos";};
+const MON = [15,15,15,10,20,20,20,15,20,20,20,15];
+const TUE = [15,15,20,10,20,20,20,15,20,20,20,15];
+const THU = [25,28,30,20,32,35,38,25,40,42,45,20];
+const WEDQ = ["test",[6,2,"rapido",1.5],[8,2,"rapido",1.5],[4,2,"rapido",1.5],[3,5,"rapido5",2],"test",[2,10,"tempo",2],[5,2,"rapido",1.5],[4,5,"rapido5",2],"t20",[5,5,"rapido5",2],"test"];
+const runDeload = w => w===4||w===8;
+function wedRun(w){
+  const v=WEDQ[w-1];
+  if(v==="test") return {title:w===12?"Test final 5 km":"Test 5 km",sub:"Objetivo final: menos de 26:00 (5:12/km)",segs:[{t:Math.round(testBase().P*5),k:"rapido"}],test:true};
+  const segs=[{t:10,k:"suave"}];
+  if(v==="t20") segs.push({t:20,k:"tempo"});
+  else for(let i=0;i<v[0];i++){segs.push({t:v[1],k:v[2]}); segs.push({t:v[3],k:"trote"});}
+  segs.push({t:5,k:"calma"});
+  const k=v==="t20"?"tempo":v[2];
+  return {title:k==="rapido"?"Series cortas":k==="rapido5"?"Series largas":"Tempo",
+    sub:(runDeload(w)?"Semana de descarga. ":"")+"10' suave para calentar, la parte de calidad y 5' de vuelta a la calma.",segs};
 }
+const wedShort = w => {const v=WEDQ[w-1]; return v==="test"?(w===12?"Test final":"Test 5 km"):v==="t20"?"20' tempo":`${v[0]} × ${dec(v[1])}'${v[2]==="tempo"?" tempo":""}`;};
 function runFor(dow,w){
-  const deload = w===4||w===8;
-  if(dow===1||dow===2) return {title:"Carrera muy suave",sub:"Al acabar la sesión de "+(dow===1?"empuje":"tirón")+". Debes poder hablar sin esfuerzo.",segs:[{t:deload?10:18,k:"suave"}],range:deload?"10":"15-20"};
-  if(dow===3){const v=WED[w-1]; if(v==="test") return {title:"Test 5 km",sub:"Haz el calentamiento de carrera. Luego 5 km al máximo ritmo que puedas mantener. Apunta el tiempo en Progreso.",segs:[{t:30,k:"rapido"}],test:true};
-    return {title:"Carrera continua",sub:"Ritmo de conversación todo el rato. Si te ahogas, baja el ritmo.",segs:[{t:v,k:"suave"}]};}
-  if(dow===4){const s=thuRun(w);return {title:s.length>1?"Series cortas":"Carrera corta",sub:"Al final de la sesión D de torso.",segs:s};}
+  if(dow===1||dow===2) return {title:"Carrera suave",sub:"Al acabar la sesión de "+(dow===1?"empuje":"tirón")+". Debes poder hablar sin esfuerzo.",segs:[{t:(dow===1?MON:TUE)[w-1],k:"suave"}]};
+  if(dow===3) return wedRun(w);
+  if(dow===4) return {title:"Carrera suave larga",sub:"Al acabar la sesión D de torso. Ritmo de conversación todo el rato.",segs:[{t:THU[w-1],k:"suave"}]};
   return null;
 }
 function runStats(r){
-  if(r.test) return {min:"≈30",km:"5,0",pace:"6:00",kmN:5};
-  let min=0,km=0;r.segs.forEach(s=>{min+=s.t;km+=s.t/PACE[s.k];});
-  return {min:String(min),km:km.toFixed(1).replace(".",","),pace:fmtPace(min/km),kmN:km};
+  if(r.test){const P=testBase().P; return {min:String(Math.round(P*5)),km:"5,0",pace:fmtPace(P),kmN:5};}
+  let min=0,km=0; r.segs.forEach(s=>{min+=s.t; km+=s.t/pace(s.k);});
+  return {min:dec(min),km:km.toFixed(1).replace(".",","),pace:fmtPace(min/km),kmN:km};
+}
+function runSteps(r){
+  if(r.test) return [{n:"1",t:"5 km a tope",d:"Ritmo constante ("+fmtPace(testBase().P)+" /km o mejor). Acelera el último km",r:"5 km"}];
+  const g=r.segs, out=[]; let i=0, n=1;
+  if(g.length===1) return [{n:"1",t:"Carrera continua suave",d:paceTxt("suave")+" /km · ritmo de conversación",r:dec(g[0].t)+"'"}];
+  if(g[0].k==="suave"){out.push({n:String(n++),t:"Calentamiento "+dec(g[0].t)+"'",d:"suave · "+paceTxt("suave")+" /km",r:dec(g[0].t)+"'"}); i=1;}
+  const calm=g[g.length-1].k==="calma", body=g.slice(i,calm?g.length-1:g.length);
+  if(body.length>=2&&body.length%2===0&&body.every((x,j)=>x.k===body[j%2].k&&x.t===body[j%2].t)){
+    const reps=body.length/2;
+    [body[0],body[1]].forEach(x=>out.push({n:reps+"×",t:`${reps} × ${dec(x.t)}' ${PDESC[x.k]}`,d:paceTxt(x.k)+" /km · "+PHINT[x.k],r:dec(x.t*reps)+"'"}));
+  } else body.forEach(x=>out.push({n:String(n++),t:`${dec(x.t)}' ${PDESC[x.k]}`,d:paceTxt(x.k)+" /km · "+PHINT[x.k],r:dec(x.t)+"'"}));
+  if(calm){const c=g[g.length-1]; out.push({n:String(n++),t:"Vuelta a la calma "+dec(c.t)+"'",d:"muy suave · "+paceTxt("calma")+" /km",r:dec(c.t)+"'"});}
+  return out;
 }
 
 /* ---------- Comida ---------- */
@@ -664,6 +748,8 @@ const DL = ["D","L","M","X","J","V","S"];
 const DNAME = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 
+FIG.P.hollow={props:[["floor"]],A:{hip:[104,116],torso:188,hand:[40,102],foot:[158,104],eb:1,kb:-1,nod:-6},B:{hip:[104,117],torso:191,hand:[40,98],foot:[158,100]},dur:[1600,1600]};
+
 /* =================== UTILIDADES =================== */
 const pad = n => String(n).padStart(2,"0");
 const key = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -686,10 +772,10 @@ const standalone = () => (navigator.standalone===true) || matchMedia("(display-m
 
 /* =================== ESTADO =================== */
 const LSK = "cambio-fisico-v1";
-const DEF = () => ({v:2,start:key(today()),name:"",onboarded:false,log:{},best:0,updated:0,m4:{},meas:{},tests:{w1:{},w12:{}},adj:[],shop:{},plan:{sess:{},menu:{}},recap:{},voice:true,runs:{}});
+const DEF = () => ({v:2,start:key(today()),name:"",onboarded:false,log:{},best:0,updated:0,m4:{},meas:{},tests:{w1:{},w6:{},w12:{}},adj:[],shop:{},plan:{sess:{},menu:{}},recap:{},voice:true,runs:{},lvl:{}});
 function migrate(s){
   s=Object.assign(DEF(),s||{});
-  s.plan=Object.assign({sess:{},menu:{}},s.plan||{}); s.runs=Object.assign({},s.runs); s.tests=Object.assign({w1:{},w12:{}},s.tests||{});
+  s.plan=Object.assign({sess:{},menu:{}},s.plan||{}); s.runs=Object.assign({},s.runs); s.lvl=Object.assign({},s.lvl); s.tests=Object.assign({w1:{},w6:{},w12:{}},s.tests||{});
   // v1: repeticiones por índice → por ejercicio
   for(const k in s.log){const l=s.log[k]; if(!l||!l.reps) continue;
     const ks=Object.keys(l.reps); if(!ks.some(x=>/^\d+$/.test(x))) continue;
@@ -716,8 +802,23 @@ function sessCode(d){const dow=d.getDay(); if(dow===4&&m4(d)) return null; retur
 function runForD(d){
   const dow=d.getDay(), w=clampW(weekOf(d));
   if(m4(d)){ if(dow===4) return null;
-    if(dow===0){const s=thuRun(w); return {title:s.length>1?"Series cortas":"Carrera corta",sub:"Semana de 4 días: al final de la sesión de piernas.",segs:s};} }
+    if(dow===0){const r=runFor(4,w); r.sub="Semana de 4 días: al final de la sesión de piernas. Ritmo de conversación."; return r;} }
   return runFor(dow,w);
+}
+// Ejercicios del día: plan (editado o no) + añadidos por fase
+function itemsFor(d){
+  const code=sessCode(d); if(!code) return [];
+  const w=clampW(weekOf(d)); let items=getSess(code).map(x=>x.slice());
+  const has=id=>items.some(x=>x[0]===id);
+  if(code==="D"&&w>=5&&!has("hollow")) items.push(["hollow",3,"20-30 s",45]);
+  if(code==="D"&&w>=9&&!has("facepull")) items.push(["facepull",3,"15",45]);
+  if(code==="A"&&w>=9) items=items.map(x=>x[0]==="flexiones"&&x[1]===4?[x[0],5,x[2],x[3]]:x);
+  return items;
+}
+const lvOf = id => {const a=LEVELS[id]; return a?Math.max(0,Math.min((S.lvl||{})[id]||0,a.length-1)):0;};
+function itemInfo(it,w,lv){
+  const [id,b,reps,rest]=it, e=EX[id]||{n:id,how:[],q:id}, A=LEVELS[id], L1=A?A[lv==null?lvOf(id):Math.min(lv,A.length-1)]:null, base=(L1&&L1.s)||b;
+  return {id,rest,e,lvl:L1,name:L1?L1.n:e.n,reps:L1?L1.r:reps,q:L1?L1.q:e.q,n:setsFor(base,w)};
 }
 function stretchFor(d){const c=sessCode(d); return (c&&c!=="C"?STR_TORSO:STR_LEGS).map(i=>STRETCH[i]);}
 function tasksFor(d){const t=[]; if(sessCode(d)) t.push("e"); if(runForD(d)) t.push("r"); return t;}
@@ -743,15 +844,21 @@ const doneSets = (l,id) => repsOf(l,id).filter(v=>v!=null).length;
 const maxOf = r => /máx/.test(r) ? null : +((r.match(/\d+/g)||[]).pop()||0) || null;
 const minOf = r => +((r.match(/\d+/g)||[1])[0]);
 const unitOf = r => / s\b/.test(r) ? "s" : "reps";
-function lastFor(id, beforeKey){
+function lastFor(id, beforeKey, lv){
   const ks=Object.keys(S.log).filter(k=>k<beforeKey).sort().reverse();
-  for(const k of ks){const v=repsOf(S.log[k],id).filter(x=>x!=null); if(!v.length) continue;
-    const d=parse(k), it=getSess(sessCode(d)||DAYSESS[d.getDay()]).find(x=>x[0]===id);
-    return {k,vals:v,reps:it?it[2]:"",n:it?setsFor(it[1],clampW(weekOf(d))):v.length};}
+  for(const k of ks){const l=S.log[k], v=repsOf(l,id).filter(x=>x!=null); if(!v.length) continue;
+    const rl=(l.lv||{})[id]||0; if(lv!=null&&rl!==lv) continue;
+    const d=parse(k), it=itemsFor(d).find(x=>x[0]===id), I=it?itemInfo(it,clampW(weekOf(d)),LEVELS[id]?rl:null):null;
+    return {k,vals:v,reps:I?I.reps:"",n:I?I.n:v.length};}
   return null;
 }
-function readyUp(id,k){const L0=lastFor(id,k); if(!L0) return null; const mx=maxOf(L0.reps); if(!mx) return null;
-  return L0.vals.length>=L0.n && L0.vals.every(v=>v>=mx) ? {mx,last:L0} : null;}
+// Listo para subir: todas las series al máximo en el último registro del nivel actual (hoy incluido si está completo)
+function readyUp(id,k){
+  const lv=LEVELS[id]?lvOf(id):null;
+  let L0=lastFor(id,k+"~",lv); if(L0&&L0.k===k&&L0.vals.length<L0.n) L0=lastFor(id,k,lv);
+  if(!L0) return null; const mx=maxOf(L0.reps); if(!mx) return null;
+  return L0.vals.length>=L0.n && L0.vals.every(v=>v>=mx) ? {mx,last:L0} : null;
+}
 
 /* =================== GUARDADO =================== */
 let dbRef=null, saving=false, again=false, synced=false;
@@ -888,16 +995,16 @@ const figOf = id => FIG.P[id] ? FIG.svg(FIG.P[id],1) : "";
 function viewEj(d,w){
   const dow=d.getDay(), code=sessCode(d), l=L(key(d));
   if(!code){
-    if(dow===3) return `<div class="hero"><span class="tag">${DNAME[dow]} · Calle</span><h2>Hoy toca correr</h2><p>No hay sesión de fuerza. La sesión de hoy es la carrera continua.</p><button class="cta" id="goRunTab">Ir a Running</button></div>
+    if(dow===3) return `<div class="hero"><span class="tag">${DNAME[dow]} · Calle</span><h2>Hoy toca correr</h2><p>No hay sesión de fuerza. Hoy toca la sesión de calidad de running.</p><button class="cta" id="goRunTab">Ir a Running</button></div>
     <section><h3>Estiramientos <small>al acabar la carrera · 30 s cada uno</small></h3><div class="plain"><ul>${linkList(stretchFor(d))}</ul></div></section>`;
     return `<div class="hero"><span class="tag">${DNAME[dow]} · Descanso</span><h2>Día de descanso</h2><p>${dow===4?"Semana de 4 días: hoy no hay sesión D. La carrera corta pasó al domingo.":"Viernes y sábado son tus días de doble trabajo. Hoy no toca entrenar y la racha sigue."}</p></div>
     <div class="note"><b>Descanso:</b> duerme 7,5-8 h, a la misma hora cada día y sin pantallas 30 min antes. Es donde se construye el músculo.</div>`;
   }
-  const s=SESS[code], items=getSess(code), sets=items.reduce((a,it)=>a+setsFor(it[1],w),0), k=key(d);
-  const doneN=items.reduce((a,it)=>a+Math.min(doneSets(l,it[0]),setsFor(it[1],w)),0);
-  const cards=items.map(([id,b,reps,rest],i)=>{const e=EX[id]||{n:id},n=setsFor(b,w),rv=repsOf(l,id), up=readyUp(id,k), full=doneSets(l,id)>=n;
+  const s=SESS[code], items=itemsFor(d), infos=items.map(it=>itemInfo(it,w)), sets=infos.reduce((a,I)=>a+I.n,0), k=key(d);
+  const doneN=infos.reduce((a,I)=>a+Math.min(doneSets(l,I.id),I.n),0);
+  const cards=infos.map(({id,n,name,reps,rest,lvl},i)=>{const rv=repsOf(l,id), up=readyUp(id,k), full=doneSets(l,id)>=n;
     let bars="";for(let j=0;j<n;j++)bars+=`<i class="${rv[j]!=null?"on":""}"></i>`;
-    return `<button class="ex ${full?"full":""}" data-i="${i}"><div class="ph">${figOf(id)}</div><div style="min-width:0;display:flex;flex-direction:column"><div class="nm">${esc(e.n)}</div><div class="mt"><b>${n} × ${esc(reps)}</b> · ${rest>=120?rest/60+" min":rest+" s"}</div>${rv.some(v=>v!=null)?`<div class="mt">Hoy: ${rv.map(v=>v==null?"–":v).join(" · ")}</div>`:""}<div class="sets">${bars}</div>${up&&!full?'<span class="up">▲ Sube de nivel</span>':""}</div>${CHEV}</button>`;}).join("");
+    return `<button class="ex ${full?"full":""}" data-i="${i}"><div class="ph">${figOf(id)}</div><div style="min-width:0;display:flex;flex-direction:column"><div class="nm">${esc(name)}</div><div class="mt"><b>${n} × ${esc(reps)}</b>${lvl?" · nivel "+(lvOf(id)+1):""} · ${rest>=120?rest/60+" min":rest+" s"}</div>${rv.some(v=>v!=null)?`<div class="mt">Hoy: ${rv.map(v=>v==null?"–":v).join(" · ")}</div>`:""}<div class="sets">${bars}</div>${up&&!full?'<span class="up">▲ Sube de nivel</span>':""}</div>${CHEV}</button>`;}).join("");
   const msg=isDeload(w)?'<p><b>Semana de descarga:</b> la mitad de series. Recupera.</p>':w<=4?'<p>Fase de adaptación: máximo 3 series por ejercicio. Técnica perfecta.</p>':w>=9?'<p>Fase de intensidad: más peso en la mochila y última serie casi al fallo.</p>':'<p>Fase de volumen: series completas y variantes más difíciles.</p>';
   return `<div class="hero"><span class="tag">${DNAME[dow]} · Sesión ${code} · ${esc(s.place)}</span><h2>${esc(s.name)}</h2>
     <div class="stats"><div class="stat"><div class="v">60</div><div class="k">min</div></div><div class="stat"><div class="v">${items.length}</div><div class="k">ejercicios</div></div><div class="stat"><div class="v">${doneN}/${sets}</div><div class="k">series</div></div></div>
@@ -910,22 +1017,33 @@ function viewEj(d,w){
     <section><h3>Estiramientos <small>${code==="C"?"piernas":"torso"} · 30 s cada uno</small></h3>${runForD(d)?'<div class="note" style="margin-bottom:8px"><b>Hoy también corres:</b> haz los estiramientos al acabar la carrera, no entre medias.</div>':""}<div class="plain"><ul>${linkList(stretchFor(d))}</ul></div></section>`;
 }
 function openEx(i){
-  const d=parse(ui.sel), w=clampW(weekOf(d)), code=sessCode(d), items=getSess(code);
-  const [id,b,reps,rest]=items[i], e=EX[id]||{n:id,how:[],q:id}, n=setsFor(b,w);
-  const last=lastFor(id,ui.sel), up=readyUp(id,ui.sel), unit=unitOf(reps), step=unit==="s"?5:1;
+  const d=parse(ui.sel), w=clampW(weekOf(d)), code=sessCode(d), items=itemsFor(d);
+  const I=itemInfo(items[i],w), {id,e,n,rest}=I, reps=I.reps, A=LEVELS[id], lv=A?lvOf(id):null;
+  const last=lastFor(id,ui.sel,lv), unit=unitOf(reps), step=unit==="s"?5:1;
   const draft=[]; for(let j=0;j<n;j++){const cur=repsOf(L(ui.sel),id)[j]; draft[j]=cur!=null?cur:(last&&last.vals[j]!=null?last.vals[j]:minOf(reps));}
   openSheet(`<div class="anim" id="anim"></div>
-    <div><div class="eyebrow">Sesión ${code} · ejercicio ${i+1} de ${items.length}</div><h2>${esc(e.n)}</h2></div>
-    <div class="chips"><span class="chip a">${n} series</span><span class="chip a">${esc(reps)} ${unit==="s"?"":"reps"}</span><span class="chip">Descanso ${rest>=120?rest/60+" min":rest+" s"}</span></div>
-    <div><div class="eyebrow" style="margin-bottom:8px">Cómo se hace</div><ol class="how">${e.how.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
-    ${up?`<div class="banner"><b>▲ Toca subir de nivel</b>La última vez hiciste ${up.last.vals.join(" · ")}: todas las series al máximo (${up.mx}). ${e.prog?"Pasa a la variante siguiente: "+esc(e.prog)+".":"Añade 2-3 kg a la mochila o baja más lento."}</div>`
-      :e.prog?`<div class="note"><b>Progresión:</b> ${esc(e.prog)}. Cuando hagas el máximo de reps en todas las series, sube de variante o añade 2-3 kg a la mochila.</div>`:""}
+    <div><div class="eyebrow">Sesión ${code} · ejercicio ${i+1} de ${items.length}</div><h2>${esc(I.name)}</h2></div>
+    <div class="chips">${A?`<span class="chip a">Nivel ${lv+1} de ${A.length}</span>`:""}<span class="chip a">${n} series</span><span class="chip a">${esc(reps)} ${unit==="s"?"":"reps"}</span><span class="chip">Descanso ${rest>=120?rest/60+" min":rest+" s"}</span></div>
+    <div><div class="eyebrow" style="margin-bottom:8px">Cómo se hace</div><ol class="how">${e.how.map(x=>`<li>${esc(x)}</li>`).join("")}${A&&lv>0?`<li><b>En este nivel:</b> ${esc(I.lvl.how)}</li>`:""}</ol></div>
+    <div id="lvBox" class="lvbox"></div>
     <div><div class="eyebrow" style="margin-bottom:8px">Apunta tus ${unit==="s"?"segundos":"repeticiones"} y marca cada serie</div><div class="setrows" id="bubs"></div></div>
     <div class="timer" id="timerBox"><div class="fill" id="tfill"></div><div><div class="eyebrow">Descanso</div><div class="tv" id="tv">${fmtT(rest)}</div></div><button class="btn p" id="restBtn">Iniciar</button></div>
-    <div class="row2"><a class="btn" href="${TT(e.q)}" target="_blank" rel="noopener">▶ Vídeos reales</a><button class="btn" id="closeS">Cerrar</button>${i<items.length-1?'<button class="btn p" id="nextEx">Siguiente →</button>':""}</div>`);
+    <div class="row2"><a class="btn" href="${TT(I.q)}" target="_blank" rel="noopener">▶ Vídeos reales</a><button class="btn" id="closeS">Cerrar</button>${i<items.length-1?'<button class="btn p" id="nextEx">Siguiente →</button>':""}</div>`);
+  const setLv=v=>{hap(); S.lvl=Object.assign({},S.lvl,{[id]:v}); save(); toast("Nuevo nivel: "+A[v].n); openEx(i);};
+  const lvUI=()=>{ const up=readyUp(id,ui.sel), nx=A&&lv<A.length-1?A[lv+1]:null; let h="";
+    if(up) h+=`<div class="banner"><b>▲ Toca subir de nivel</b>La última vez hiciste ${up.last.vals.join(" · ")}: todas las series al máximo (${up.mx}). ${nx?"":!A&&e.prog?"Pasa a la variante siguiente: "+esc(e.prog)+".":"Añade 2-3 kg a la mochila o baja más lento."}${nx?`<div class="row2" style="margin-top:10px"><button class="btn p" id="lvUp">Subir a: ${esc(nx.n)}</button></div>`:""}</div>`;
+    else if(nx) h+=`<div class="note"><b>Siguiente nivel:</b> ${esc(nx.n)} (${esc(nx.r)}). Cuando hagas el máximo de reps en todas las series, podrás subir.</div>`;
+    else if(A) h+=`<div class="note"><b>Último nivel.</b> Cuando hagas el máximo en todas las series, añade 2-3 kg a la mochila o baja más lento.</div>`;
+    else if(e.prog) h+=`<div class="note"><b>Progresión:</b> ${esc(e.prog)}. Cuando hagas el máximo de reps en todas las series, sube de variante o añade 2-3 kg a la mochila.</div>`;
+    if(A&&lv>0) h+=`<button class="btn small" id="lvDown">Volver al nivel anterior</button>`;
+    $("#lvBox").innerHTML=h;
+    const u=$("#lvUp"); if(u) u.onclick=()=>setLv(lv+1);
+    const dn=$("#lvDown"); if(dn) dn.onclick=()=>setLv(lv-1); };
+  lvUI();
   if(FIG.P[id]){const stop=FIG.play($("#anim"),FIG.P[id]); onSheetClose(stop);}
-  const write=(j,val)=>mutate(()=>{const L2=(S.log[ui.sel]=S.log[ui.sel]||{}); L2.reps=Object.assign({},L2.reps); const a=(L2.reps[id]||[]).slice(); while(a.length<n) a.push(null); a[j]=val; L2.reps[id]=a;
-      if(items.every(it=>doneSets(L2,it[0])>=setsFor(it[1],w))) L2.e=1;});
+  const write=(j,val)=>{ mutate(()=>{const L2=(S.log[ui.sel]=S.log[ui.sel]||{}); L2.reps=Object.assign({},L2.reps); const a=(L2.reps[id]||[]).slice(); while(a.length<n) a.push(null); a[j]=val; L2.reps[id]=a;
+      if(A) L2.lv=Object.assign({},L2.lv,{[id]:lv});
+      if(items.every(it=>doneSets(L2,it[0])>=itemInfo(it,w).n)) L2.e=1;}); lvUI(); };
   const draw=()=>{const rv=repsOf(L(ui.sel),id); let h="";
     for(let j=0;j<n;j++){const on=rv[j]!=null, v=on?rv[j]:draft[j];
       h+=`<div class="setrow ${on?"on":""}"><div class="sl">Serie ${j+1}<small>${last&&last.vals[j]!=null?"Última vez: "+last.vals[j]+" "+unit:"Objetivo: "+esc(reps)}</small></div>
@@ -954,20 +1072,17 @@ function openEx(i){
 /* ---------- Running ---------- */
 function viewRun(d,w){
   const dow=d.getDay(), r=runForD(d), l=L(key(d));
-  const table=`<section><h3>Plan de carrera <small>12 semanas</small></h3><div class="plain tscroll"><table class="weektable"><tr><th>Sem.</th><th>Miércoles</th><th>Jueves</th></tr>${WED.map((v,i)=>{const t=thuRun(i+1);const ts=t.length>1?`5' + ${(t.length-1)/2} × (${t[1].t}' / ${t[2].t}')`:t[0].t+" min suave";return `<tr class="${i+1===w?"cur":""}"><td>${i+1}${i===3||i===7?" ↓":""}</td><td>${v==="test"?"Test 5 km":v+" min suave"}</td><td>${ts}</td></tr>`;}).join("")}</table></div></section>
-    <div class="note"><b>Ritmo suave:</b> puedes hablar en frases completas. <b>Rápido:</b> solo puedes decir 2-3 palabras. ↓ = semana de descarga.</div>`;
+  const tb=testBase();
+  const table=`<section><h3>Plan de carrera <small>minutos · 12 semanas</small></h3><div class="plain tscroll"><table class="weektable"><tr><th>Sem.</th><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th></tr>${MON.map((_,i)=>`<tr class="${i+1===w?"cur":""}"><td>${i+1}${runDeload(i+1)?" ↓":""}</td><td>${MON[i]}'</td><td>${TUE[i]}'</td><td>${wedShort(i+1)}</td><td>${THU[i]}'</td></tr>`).join("")}</table></div></section>
+    <div class="note"><b>Tus ritmos</b> (${tb.src?"según tu test de la semana "+tb.src:"estimados: aún no hay test de 5 km"}): suave <b>${paceTxt("suave")}</b> · tempo <b>${paceTxt("tempo")}</b> · series de 2' <b>${paceTxt("rapido")}</b> · series de 5' <b>${paceTxt("rapido5")}</b> · trote <b>${paceTxt("trote")}</b> /km. ↓ = semana de descarga.</div>
+    <div class="note"><b>Suave:</b> puedes hablar en frases completas. <b>Tempo:</b> frases cortas. <b>Rápido:</b> solo 2-3 palabras.</div>`;
   if(!r) return `<div class="hero"><span class="tag">${DNAME[dow]}</span><h2>Hoy no toca correr</h2><p>${dow===0?"Domingo es día de piernas. Descansa las piernas para correr mañana.":dow===4?"Semana de 4 días: la carrera de hoy pasó al domingo.":"Día de descanso."}</p></div>`+table;
-  const st=runStats(r), tot=r.segs.reduce((a,s)=>a+s.t,0);
+  const st=runStats(r), steps=runSteps(r);
   const bar=r.segs.map(s=>`<div class="seg-${s.k}" style="flex:${s.t}"></div>`).join("");
-  let steps=[]; if(r.segs.length>1){const reps=(r.segs.length-1)/2;
-    steps.push({n:"1",t:"Calentamiento",d:"Trote suave · "+fmtPace(PACE.suave)+" /km",r:r.segs[0].t+"'"});
-    steps.push({n:reps+"×",t:r.segs[1].t+"' rápido",d:fmtPace(PACE.rapido)+" /km · 2-3 palabras",r:r.segs[1].t*reps+"'"});
-    steps.push({n:reps+"×",t:r.segs[2].t+"' trote de recuperación",d:fmtPace(PACE.trote)+" /km · muy suave",r:r.segs[2].t*reps+"'"});}
-  else steps.push({n:"1",t:r.test?"5 km a tope":"Carrera continua suave",d:r.test?"Ritmo constante, acelera el último km":fmtPace(PACE.suave)+" /km · ritmo de conversación",r:r.test?"5 km":(r.range?r.range+"'":tot+"'")});
   return `<div class="hero"><span class="tag">${DNAME[dow]} · Semana ${w}</span><h2>${esc(r.title)}</h2><p>${esc(r.sub)}</p>
-    <div class="runhero"><div class="big"><span class="v">${r.range||st.min}<small>min</small></span><span class="k">Tiempo</span></div><div class="big"><span class="v">${st.km}<small>km</small></span><span class="k">Distancia aprox.</span></div><div class="big"><span class="v">${st.pace}</span><span class="k">Ritmo /km</span></div></div>
+    <div class="runhero"><div class="big"><span class="v">${st.min}<small>min</small></span><span class="k">Tiempo</span></div><div class="big"><span class="v">${st.km}<small>km</small></span><span class="k">Distancia aprox.</span></div><div class="big"><span class="v">${st.pace}</span><span class="k">Ritmo /km</span></div></div>
     <div class="segbar" aria-hidden="true">${bar}</div>
-    <div class="legend"><span><i class="seg-suave"></i>Suave</span>${r.segs.length>1?'<span><i class="seg-rapido"></i>Rápido</span><span><i class="seg-trote"></i>Trote</span>':""}</div>
+    <div class="legend">${[...new Set(r.segs.map(x=>x.k))].map(k=>`<span><i class="seg-${k}"></i>${PNAME[k]}</span>`).join("")}</div>
     ${l.r?"":`<button class="cta" id="goRun"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>${r.test?"Empezar cronómetro":"Empezar carrera guiada"}</button>`}
     ${doneBtn(l.r,"Marcar como hecha","doneR").replace('class="cta ','class="cta '+(l.r?"":"ghost "))}</div>
     ${runCard(key(d))}
@@ -1030,11 +1145,15 @@ function routeMap(pts){
   return `<div class="rmap">${tiles}<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Mapa de la ruta"><path d="M${xy.map(p=>p.join(" ")).join("L")}" fill="none" stroke="var(--bg)" stroke-opacity=".55" stroke-width="7.5" stroke-linejoin="round" stroke-linecap="round"/><g fill="none" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">${segs}</g>${marks}<circle cx="${s1[0]}" cy="${s1[1]}" r="6" fill="var(--fg)" stroke="var(--bg)" stroke-width="2"/><circle cx="${s0[0]}" cy="${s0[1]}" r="6" fill="var(--food)" stroke="var(--bg)" stroke-width="2"/></svg>
     <div class="rlegend"><span><i style="background:var(--food)"></i>Salida</span><span><i style="background:var(--ej)"></i>Lento</span><span><i style="background:var(--streak)"></i>Medio</span><span><i style="background:var(--run)"></i>Rápido</span></div><div class="attr">© OpenStreetMap · © CARTO</div></div>`;
 }
+function easyWarn(k,A){
+  const r=runForD(parse(k)); if(!r||r.test||!r.segs.every(x=>x.k==="suave")) return "";
+  return A.avg<(testBase().P+1)*60?`<div class="banner"><b>Has ido demasiado rápido</b>Ritmo medio ${fmtSK(A.avg)} /km; tu suave es ${paceTxt("suave")}. Los días suaves deben ser suaves para recuperar y ganar músculo.</div>`:"";
+}
 function runCard(k){
   const rec=(S.runs||{})[k]; if(!rec) return ""; const A=analyze(rec);
   return `<section><h3>Tu carrera <small>medida con GPS</small></h3><div class="runcard" data-runk="${k}" role="button" tabindex="0">${routeMap(A.pts)}
     <div class="runhero"><div class="big"><span class="v">${kmTxt(rec.dist)}<small>km</small></span><span class="k">Distancia</span></div><div class="big"><span class="v">${fmtDur(rec.dur)}</span><span class="k">Duración</span></div><div class="big"><span class="v">${fmtSK(A.avg)}</span><span class="k">Ritmo /km</span></div></div>
-    <span class="more">Ver ruta y parciales ${CHEV}</span></div></section>`;
+    <span class="more">Ver ruta y parciales ${CHEV}</span></div>${easyWarn(k,A)}</section>`;
 }
 function runHistory(){
   const ks=Object.keys(S.runs||{}).sort().reverse(); if(!ks.length) return "";
@@ -1050,6 +1169,7 @@ function openRunSummary(k){
       <div class="kpi"><span class="v">${fmtSK(A.avg)}<small>/km</small></span><span class="k">Ritmo medio</span></div>
       <div class="kpi"><span class="v">${fmtSK(A.best)}<small>/km</small></span><span class="k">Ritmo más rápido</span></div>
     </div>
+    ${easyWarn(k,A)}
     ${A.splits.length?`<div><div class="eyebrow" style="margin-bottom:6px">Parciales por kilómetro</div><div class="plain tscroll"><table class="mtable"><tr><th>Km</th><th>Tiempo</th><th>Ritmo /km</th></tr>${A.splits.map(x=>`<tr class="${x.best?"cur":""}"><td>${x.lbl}${x.best?" ★":""}</td><td>${fmtDur(x.t)}</td><td>${fmtSK(x.t/(x.d/1000))}</td></tr>`).join("")}</table></div></div>`:""}
     <div class="note">Velocidad media: <b>${dec((rec.dist/Math.max(1,rec.dur)*3.6).toFixed(1))} km/h</b>. Ritmo más rápido = tus mejores ${A.bw} m seguidos. El tiempo no cuenta las pausas.</div>
     <div class="row2"><button class="btn danger" id="rdel">Borrar recorrido</button><button class="btn p" id="closeS" style="flex:1">Cerrar</button></div>`);
@@ -1117,9 +1237,9 @@ function openRun(){
     const s=segAt(e);
     if(s.i>=segs.length){ $("#rclock").textContent="0:00"; $("#rph").textContent="¡Terminado!"; finish(true); return; }
     $("#rclock").textContent=fmtT(Math.ceil(total-e)); $("#rph").textContent=PNAME[segs[s.i].k]+" · "+fmtT(Math.ceil(s.left));
-    $("#rsub").textContent=`Tramo ${s.i+1} de ${segs.length} · ritmo ${fmtPace(PACE[segs[s.i].k])} /km`;
+    $("#rsub").textContent=`Tramo ${s.i+1} de ${segs.length} · ritmo ${paceTxt(segs[s.i].k)} /km`;
     $$("[data-sg]").forEach(x=>x.style.opacity=+x.dataset.sg<=s.i?"1":".45");
-    if(s.i!==lastIdx){ if(lastIdx>=0||state==="run"){hap(2); beep(segs[s.i].k==="rapido"?988:660,.25); say(`${PNAME[segs[s.i].k]}. ${segs[s.i].t} ${segs[s.i].t===1?"minuto":"minutos"}`);} lastIdx=s.i; }
+    if(s.i!==lastIdx){ if(lastIdx>=0||state==="run"){hap(2); beep(["rapido","rapido5","tempo"].includes(segs[s.i].k)?988:660,.25); say(`${PNAME[segs[s.i].k]}. ${minTxt(segs[s.i].t)}`);} lastIdx=s.i; }
   };
   async function lock(){try{ if(navigator.wakeLock) wake=await navigator.wakeLock.request("screen"); }catch(e){}}
   function finish(auto,testT){ if(state==="done") return; const e=elapsed(); state="done"; clearInterval(tm); try{wake&&wake.release();}catch(x){}
@@ -1127,14 +1247,17 @@ function openRun(){
     const pts=testT?G.pts.filter(p=>p[3]<=5000):G.pts;
     const rec=G.dist>=50&&pts.length>1?{dur:Math.round(testT||e),dist:testT?5000:Math.round(G.dist),trk:encTrack(pts),at:Date.now(),title:r.title}:null;
     clearLive();
+    let newPace=false;
     mutate(()=>{ const l=(S.log[k]=S.log[k]||{}); l.r=1;
       if(rec) S.runs=Object.assign({},S.runs,{[k]:rec});
-      if(rec&&testT&&clampW(weekOf(d))===12&&(S.tests.w12||{}).k5==null){S.tests=JSON.parse(JSON.stringify(S.tests)); S.tests.w12.k5=Math.round(rec.dur/6)/10;} });
-    if(rec) openRunSummary(k); else closeSheet(); }
+      if(rec&&testT){ const wk=clampW(weekOf(d)), slot=wk===1?"w1":wk===6?"w6":wk===12?"w12":null;
+        if(slot&&((S.tests||{})[slot]||{}).k5==null){S.tests=JSON.parse(JSON.stringify(S.tests)); S.tests[slot]=S.tests[slot]||{}; S.tests[slot].k5=Math.round(rec.dur/60*1000)/1000; newPace=true;} } });
+    if(rec) openRunSummary(k); else closeSheet();
+    if(newPace) setTimeout(()=>toast(paceToast()),2800); }
   $("#rgo").onclick=()=>{unlockAudio(); hap();
     if(state==="done") return;
     if(state==="run"){acc=elapsed(); state="pause"; G.gap=true; clearInterval(tm); $("#rgo").textContent="Seguir"; gpsUI(); return;}
-    if(state==="ready"&&segs){say(`Empezamos. ${PNAME[segs[0].k]}, ${segs[0].t} minutos.`); lastIdx=0;}
+    if(state==="ready"&&segs){say(`Empezamos. ${PNAME[segs[0].k]}, ${minTxt(segs[0].t)}.`); lastIdx=0;}
     if(state==="ready"&&!segs) say("Empezamos. Cinco kilómetros.");
     state="run"; t0=Date.now(); $("#rgo").textContent="Pausa"; lock(); tm=setInterval(ui2,250); ui2();};
   $("#rvoice").onclick=()=>{S.voice=!S.voice; save(); $("#rvoice").classList.toggle("on",S.voice);};
@@ -1237,9 +1360,12 @@ function viewProg(d){
   const w=weekOf(d), sm=weekSummary(d), adv=dietAdvice(), ms=measList(), T=S.tests;
   const mon=(()=>{const back=(TODAY.getDay()+6)%7;return key(addD(TODAY,-back));})();
   const cur=(S.meas||{})[mon]||{};
-  const testRows=TESTS.map(([id,n,u,dir])=>{const a=(T.w1||{})[id], b=(T.w12||{})[id]; let diff="";
-    if(a!=null&&b!=null){const dv=Math.round((b-a)*10)/10; const good=dv*dir>0; diff=`<span class="${dv===0?"":good?"pos":"neg"}">${dv>0?"+":""}${dec(dv)}</span>`;}
-    return `<tr><td>${n} <span style="color:var(--muted);font-size:12px">${u}</span></td><td>${id==="k5"?"—":`<input inputmode="decimal" data-test="w1.${id}" value="${a!=null?dec(a):""}" aria-label="${n} semana 1">`}</td><td><input inputmode="decimal" data-test="w12.${id}" value="${b!=null?dec(b):""}" aria-label="${n} semana 12"></td><td>${diff}</td></tr>`;}).join("");
+  const testRows=TESTS.map(([id,n,u,dir])=>{const isK=id==="k5", fv=v=>v==null?"":isK?fmtMin(v):dec(v);
+    const a=(T.w1||{})[id], m=isK?(T.w6||{})[id]:null, b=(T.w12||{})[id], bb=b!=null?b:m; let diff="";
+    if(a!=null&&bb!=null){const dv=isK?bb-a:Math.round((bb-a)*10)/10, good=dv*dir>0, txt=isK?(dv>0?"+":dv<0?"−":"")+fmtMin(Math.abs(dv)):(dv>0?"+":"")+dec(dv);
+      diff=`<span class="${Math.abs(dv)<1e-9?"":good?"pos":"neg"}">${txt}</span>`;}
+    const inp=(wk,v)=>`<input inputmode="${isK?"text":"decimal"}" data-test="${wk}.${id}" value="${fv(v)}"${isK?' placeholder="27:30"':""} aria-label="${n} semana ${wk.slice(1)}">`;
+    return `<tr><td>${n} <span style="color:var(--muted);font-size:12px">${isK?"m:ss":u}</span></td><td>${inp("w1",a)}</td><td>${isK?inp("w6",m):""}</td><td>${inp("w12",b)}</td><td>${diff}</td></tr>`;}).join("");
   return `<div class="hero"><span class="tag">Semana ${clampW(w)} · resumen</span><h2>Tu semana</h2>
     <div class="grid4">
       <div class="kpi"><span class="v">${sm.e[0]}<small>/${sm.e[1]}</small></span><span class="k">Entrenos</span><div class="bar"><i style="width:${sm.e[1]?sm.e[0]/sm.e[1]*100:0}%;background:var(--ej)"></i></div></div>
@@ -1266,8 +1392,8 @@ function viewProg(d){
   <section><h3>Cintura <small>cm</small></h3><div class="card">${chart(ms.filter(x=>x.cm!=null).map(x=>({d:x.d,v:x.cm})),"cm")}</div></section>
   ${ms.length?`<section><h3>Historial</h3><div class="plain tscroll"><table class="mtable"><tr><th>Lunes</th><th>Peso</th><th>Cintura</th><th></th></tr>${[...ms].reverse().map(x=>`<tr><td>${fdate(x.d)}</td><td>${x.kg!=null?dec(x.kg):"–"}</td><td>${x.cm!=null?dec(x.cm):"–"}</td><td><button class="x" data-delm="${x.k}" aria-label="Borrar pesaje">×</button></td></tr>`).join("")}</table></div></section>`:""}
   ${runHistory()}
-  <section><h3>Tests <small>semana 1 vs semana 12</small></h3><div class="plain tscroll"><table class="mtable"><tr><th>Test</th><th>Sem. 1</th><th>Sem. 12</th><th>Cambio</th></tr>${testRows}</table></div>
-  <div class="note" style="margin-top:8px">Hazlos el mismo día y a la misma hora. El 5 km es el test del miércoles de la semana 12. Verde = mejora.</div></section>`;
+  <section><h3>Tests <small>semanas 1, 6 y 12</small></h3><div class="plain tscroll"><table class="mtable tests"><tr><th>Test</th><th>Sem. 1</th><th>Sem. 6</th><th>Sem. 12</th><th>Cambio</th></tr>${testRows}</table></div>
+  <div class="note" style="margin-top:8px">Hazlos el mismo día y a la misma hora. El 5 km se corre los miércoles de las semanas 1, 6 y 12; escríbelo como 27:30. Tus ritmos de carrera salen del último. Verde = mejora.</div></section>`;
 }
 function bindProg(){
   const w=weekOf(parse(ui.sel));
@@ -1278,7 +1404,7 @@ function bindProg(){
   $$("[data-delm]").forEach(b=>b.onclick=()=>{const k=b.dataset.delm, old=S.meas[k]; S.meas=Object.assign({},S.meas); delete S.meas[k]; save(); render(); toast("Pesaje borrado",{label:"Deshacer",fn:()=>{S.meas[k]=old;save();render();}});});
   const ap=$("#adjApply"); if(ap) ap.onclick=()=>{const a=dietAdvice(); S.adj=(S.adj||[]).concat([{kcal:a.kcal,txt:a.act,from:a.from}]); save(); render(); toast("Ajuste aplicado a tu dieta");};
   const un=$("#adjUndo"); if(un) un.onclick=()=>{S.adj=(S.adj||[]).slice(0,-1); save(); render();};
-  $$("[data-test]").forEach(inp=>inp.onchange=()=>{const [wk,id]=inp.dataset.test.split("."); S.tests=JSON.parse(JSON.stringify(S.tests)); S.tests[wk]=S.tests[wk]||{}; const v=num(inp.value); if(v==null) delete S.tests[wk][id]; else S.tests[wk][id]=v; save(); render();});
+  $$("[data-test]").forEach(inp=>inp.onchange=()=>{const [wk,id]=inp.dataset.test.split("."); S.tests=JSON.parse(JSON.stringify(S.tests)); S.tests[wk]=S.tests[wk]||{}; const v=id==="k5"?parseMin(inp.value):num(inp.value); if(v==null) delete S.tests[wk][id]; else S.tests[wk][id]=v; save(); render(); if(id==="k5"&&v!=null) toast(paceToast());});
   $$(".chart[data-pts]").forEach(c=>{const pts=JSON.parse(c.dataset.pts), svg=c.querySelector("svg"), tip=c.querySelector(".tip");
     const mv=ev=>{const r=svg.getBoundingClientRect(), sx=r.width/(+c.dataset.w), x=(ev.clientX-r.left)/sx; let best=pts[0]; pts.forEach(p=>{if(Math.abs(p[0]-x)<Math.abs(best[0]-x)) best=p;});
       tip.hidden=false; tip.textContent=best[2]; tip.style.left=best[0]*sx+"px"; tip.style.top=best[1]*sx+"px";};
