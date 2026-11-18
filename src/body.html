@@ -1,0 +1,40 @@
+<div class="wrap">
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="mk" id="mk"></div>
+        <div style="min-width:0"><div class="hi" id="hi"></div><h1 id="dayTitle">Hoy</h1></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="streak" id="streak" title="Días seguidos sin fallar">
+          <svg viewBox="0 0 24 24" fill="var(--streak)"><path d="M12 2c1 3.5 5 5.8 5 11a5 5 0 0 1-10 0c0-2.4 1-4 2.3-5.2.2 1.7 1 2.8 2.2 3.2C11 8.4 11.3 5 12 2z"/></svg>
+          <b id="streakN">0</b><span>días<br>de racha</span>
+        </div>
+        <button class="gear" id="openAdmin" aria-label="Administración"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      </div>
+    </div>
+    <div>
+      <div class="phase"><span id="phase"></span><span id="phasePct"></span></div>
+      <div class="pbar" style="margin-top:6px"><i id="pbar"></i></div>
+    </div>
+    <div class="weeknav">
+      <button class="arrow" id="prevW" aria-label="Semana anterior"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <div class="lbl" id="weekLbl"></div>
+      <button class="arrow" id="nextW" aria-label="Semana siguiente"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="days" id="days"></div>
+  </header>
+  <main id="main" class="wrap"></main>
+</div>
+
+<nav class="tabs"><div class="in">
+  <button data-t="ej"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>Ejercicio<i class="pip"></i></button>
+  <button data-t="run"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4.5" r="1.8"/><path d="M8 21l3-6 3 2v5M6 12l3-4 4 1 2 4 3 1M11 15l1-5"/></svg>Running<i class="pip"></i></button>
+  <button data-t="food"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v8a3 3 0 0 0 3 3v7M7 3v8M10 3v8a3 3 0 0 1-3 3M17 21V3c-2.5 1.5-4 4-4 8h4"/></svg>Comida<i class="pip"></i></button>
+  <button data-t="prog"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progreso<i class="pip"></i></button>
+</div></nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden><div class="in" id="sheetIn"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="ob" id="ob" hidden></div>
